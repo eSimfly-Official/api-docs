@@ -84,7 +84,6 @@ fetch('https://esimfly.net/api/v1/business/balance', {
 
 - [Learn about Authentication](/docs/api-authentication) - Understand HMAC signature generation
 - [Explore API Endpoints](/docs/api/balance) - See all available operations
-- [Set up Webhooks](/docs/webhooks) - Receive real-time notifications
 - [View Code Examples](/docs/examples) - Integration examples in multiple languages
 
 ## Test Environment

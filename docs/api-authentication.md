@@ -291,4 +291,4 @@ Rate limit information is included in response headers:
 - [Quick Start](/docs/quick-start) - Get started quickly
 - [API Reference](/docs/api-reference) - Explore all available endpoints
 - [Examples](/docs/examples) - See complete integration examples
-- [Test Your API](/business-dashboard/api-test) - Test your connection
+- [Test Your API](https://esimfly.net/business-dashboard/api-test) - Test your connection
