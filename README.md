@@ -91,25 +91,6 @@ documentation/
 - **Configuration**: Edit `docusaurus.config.js`
 - **Navigation**: Edit `sidebars.js`
 
-## 📝 Contributing
-
-We welcome contributions! To add or update documentation:
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/new-docs`)
-3. Make your changes in the `docs/` directory
-4. Test locally with `npm start`
-5. Commit and push
-6. Open a Pull Request
-
-### Documentation Guidelines
-
-- Use clear, concise language
-- Include code examples in multiple languages when possible
-- Follow the existing structure and formatting
-- Test all code examples before submitting
-- Add proper metadata (title, description) to markdown files
-
 ## 🔍 SEO & Discoverability
 
 This documentation is optimized for:
