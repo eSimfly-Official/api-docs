@@ -35,27 +35,6 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 
 [Get your API credentials →](https://esimfly.net/business-dashboard/settings)
 
-## 🔍 SEO & Discoverability
-
-This documentation is optimized for:
-- 🔎 Google indexing and ranking
-- 🎯 Keyword targeting: "eSIM API", "eSIM integration", "eSIM reseller API"
-- 📱 Mobile-responsive design
-- ⚡ Fast page loads
-- 🔗 Internal linking structure
-
-## 🛡️ Security Notice
-
-**Public vs Private Documentation**
-
-This repository contains **PUBLIC** API documentation. We do NOT include:
-- ❌ Secret keys or credentials
-- ❌ Internal admin endpoints
-- ❌ Partner-specific pricing details
-- ❌ System architecture internals
-
-Private/partner documentation is maintained separately.
-
 ## 🆘 Support
 
 - **Developer Support**: support@esimfly.net
