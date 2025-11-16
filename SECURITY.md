@@ -10,7 +10,7 @@ The security of the eSIMfly API and its documentation is a top priority. We appr
 
 Instead, please report security issues privately to:
 
-**Email**: security@esimfly.net
+**Email**: support@esimfly.net
 
 **Include in your report:**
 - Description of the vulnerability
