@@ -39,12 +39,24 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Example Request
 
+**USD User:**
+```json
+{
+  "iccid": "8943108170002570328",
+  "packageCode": "turkey-7days-1gb-topup",
+  "packageName": "Turkey 1GB 7Days",
+  "price": 2.45,
+  "quantity": 1
+}
+```
+
+**IQD User:**
 ```json
 {
   "iccid": "8943108170002570328",
   "packageCode": "TOPUP_PLGJ7UB3C",
   "packageName": "Iraq 1GB 7Days",
-  "price": 3.68,
+  "price": 4856,
   "quantity": 1
 }
 ```
@@ -53,6 +65,29 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
+```json
+{
+  "success": true,
+  "message": "eSIM top-up processed successfully",
+  "orderReference": "topup_1755559183090_vyf9w",
+  "iccid": "8943108170002570328",
+  "packageName": "Turkey 1GB 7Days",
+  "newBalance": 550.68,
+  "currency": "USD",
+  "status": "completed",
+  "amount": 2.45,
+  "profit": 0.23,
+  "processing_time_ms": 3724,
+  "esimData": {
+    "newTotalVolumeGB": 8.0,
+    "newRemainingVolumeGB": 8.0,
+    "expiredTime": "February 13, 2026 at 11:27 PM"
+  }
+}
+```
+
+**IQD User Example:**
 ```json
 {
   "success": true,
@@ -60,10 +95,11 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "orderReference": "topup_1755559183090_vyf9w",
   "iccid": "8943108170002570328",
   "packageName": "Iraq 1GB 7Days",
-  "newBalance": 550.68,
+  "newBalance": 726895,
+  "currency": "IQD",
   "status": "completed",
-  "amount": 3.68,
-  "profit": 0.35,
+  "amount": 4856,
+  "profit": 456,
   "processing_time_ms": 3724,
   "esimData": {
     "newTotalVolumeGB": 8.0,
@@ -82,10 +118,11 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | orderReference | String | Unique order reference for tracking |
 | iccid | String | eSIM ICCID that was topped up |
 | packageName | String | Name of the topup package applied |
-| newBalance | Number | Your updated account balance |
+| newBalance | Number | Your updated account balance in preferred currency |
+| currency | String | Currency code (USD or IQD based on user preference) |
 | status | String | Order status (always "completed" for successful orders) |
-| amount | Number | Total amount charged |
-| profit | Number | Your profit from this transaction |
+| amount | Number | Total amount charged in user's preferred currency |
+| profit | Number | Your profit from this transaction in user's preferred currency |
 | processing_time_ms | Integer | Processing time in milliseconds |
 | esimData | Object | Updated eSIM information |
 

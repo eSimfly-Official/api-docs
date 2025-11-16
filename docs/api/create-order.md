@@ -40,11 +40,24 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Request Example
 
+**USD User:**
 ```json
 {
-  "packageCode": "merhaba-7days-1gb",
+  "packageCode": "TR1GB7D",
   "packageName": "Turkey 1 GB 7 Days",
   "price": 2.72,
+  "quantity": 1,
+  "duration": 7,
+  "flagUrl": "/img/flags/tr.png"
+}
+```
+
+**IQD User:**
+```json
+{
+  "packageCode": "TR1GB7D",
+  "packageName": "Turkey 1GB 7Days",
+  "price": 969,
   "quantity": 1,
   "duration": 7,
   "flagUrl": "/img/flags/tr.png"
@@ -55,6 +68,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
 ```json
 {
   "success": true,
@@ -63,17 +77,48 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "esimId": 2503,
   "packageName": "Turkey 1 GB 7 Days",
   "newBalance": 47.28,
+  "currency": "USD",
   "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
   "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
   "paymentMethod": "balance",
   "status": "completed",
   "amount": 2.72,
-  "profit": 0.2,
+  "profit": 0.20,
   "final_price": 2.72,
   "processing_time_ms": 3245,
   "esims": [
     {
       "iccid": "8932042000010078801",
+      "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
+      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+      "status": "New",
+      "isPending": false
+    }
+  ]
+}
+```
+
+**IQD User Example:**
+```json
+{
+  "success": true,
+  "message": "Order processed successfully",
+  "orderReference": "order_1756393024924_wmdq2",
+  "esimId": 2604,
+  "packageName": "Turkey 1GB 7Days",
+  "newBalance": 203488,
+  "currency": "IQD",
+  "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
+  "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+  "paymentMethod": "balance",
+  "status": "completed",
+  "amount": 969,
+  "profit": 91,
+  "final_price": 969,
+  "processing_time_ms": 3245,
+  "esims": [
+    {
+      "iccid": "8910300000037870123",
       "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
       "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
       "status": "New",
@@ -94,14 +139,15 @@ When eSIM details are being processed:
   "orderReference": "order_1692123456_ab7cd",
   "esimId": 2503,
   "packageName": "Turkey 1 GB 7 Days",
-  "newBalance": 47.28,
+  "newBalance": 204000,
+  "currency": "IQD",
   "qrCodeUrl": "",
   "directAppleInstallUrl": "",
   "paymentMethod": "balance",
   "status": "pending_details",
-  "amount": 2.72,
-  "profit": 0.2,
-  "final_price": 2.72,
+  "amount": 969,
+  "profit": 91,
+  "final_price": 969,
   "processing_time_ms": 1523,
   "note": "The order was placed successfully but eSIM details are being processed. Please check order status in a few minutes.",
   "esims": [
@@ -125,14 +171,15 @@ When eSIM details are being processed:
 | orderReference | String | Unique order reference for tracking |
 | esimId | Integer | Primary eSIM ID (for single eSIM orders) |
 | packageName | String | Ordered package name |
-| newBalance | Number | Your updated account balance |
+| newBalance | Number | Your updated account balance in preferred currency |
+| currency | String | Currency code (USD or IQD based on user preference) |
 | qrCodeUrl | String | QR code for eSIM installation |
 | directAppleInstallUrl | String | Direct iPhone installation URL |
 | paymentMethod | String | Always "balance" for business orders |
 | status | String | Order status ("completed" or "pending_details") |
-| amount | Number | Total order amount |
-| profit | Number | Your profit amount from this order |
-| final_price | Number | Final price charged to your balance |
+| amount | Number | Total order amount in user's preferred currency |
+| profit | Number | Your profit amount in user's preferred currency |
+| final_price | Number | Final price charged to your balance in preferred currency |
 | processing_time_ms | Integer | Order processing time in milliseconds |
 | esims | Array | Array of eSIM details |
 | note | String | Additional information (for pending orders) |
@@ -539,10 +586,6 @@ if (result.success) {
 
 ## Package Code Requirements
 
-### Format Examples
-- **Standard**: `merhaba-7days-1gb`
-- **ESIMGo**: `esim_UL_1D_TR_V2`
-- **ESIMAccess**: `PHAJHEAYP`
 
 ### Important Notes
 - Use the exact `package_code` from the packages endpoint

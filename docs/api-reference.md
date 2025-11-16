@@ -30,6 +30,8 @@ See [Balance Query](/docs/api/balance) for detailed documentation.
 }
 ```
 
+*Note: Currency and balance amount depend on user's preferred currency setting (USD or IQD)*
+
 ## eSIM Management
 
 ### Get All Packages
@@ -60,6 +62,7 @@ See [Get All Packages](/docs/api/packages) for detailed documentation.
         "data_amount_gb": 1,
         "validity_days": 7,
         "cost": 1.44,
+        "currency": "USD",
         "features": {
           "voice_minutes": 0,
           "sms_count": 0,
@@ -110,6 +113,7 @@ See [Create Order](/docs/api/create-order) for detailed documentation.
   "esimId": 2503,
   "packageName": "Turkey 1 GB 7 Days",
   "newBalance": 47.28,
+  "currency": "USD",
   "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
   "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
   "paymentMethod": "balance",
@@ -129,6 +133,8 @@ See [Create Order](/docs/api/create-order) for detailed documentation.
   ]
 }
 ```
+
+*Note: For IQD users, amounts would be shown in Iraqi Dinars and currency would be "IQD"*
 
 ### Check Order Status
 
@@ -177,6 +183,37 @@ See [Get Topup Packages](/docs/api/topup-packages) for detailed documentation.
 - `iccid` (required): eSIM ICCID to get compatible topup packages
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Number of results per page (default: 50, max: 100)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "packages": [
+      {
+        "package_code": "TOPUP_PXOO225PI",
+        "name": "Iraq 3GB 30Days",
+        "data_amount_gb": 3,
+        "validity_days": 30,
+        "cost": 10.56,
+        "currency": "USD",
+        "features": {
+          "is_rechargeable": true
+        },
+        "is_unlimited": false
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 4,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+*Note: For IQD users, cost would be shown in Iraqi Dinars (e.g., 13939 IQD) and currency would be "IQD"*
 
 **Response:**
 ```json
@@ -386,6 +423,7 @@ See [Orders](/docs/api/orders) for detailed documentation.
         "package_name": "United States 1GB 7Days",
         "package_code": "PHAJHEAYP",
         "amount": 1.44,
+        "currency": "USD",
         "status": "completed",
         "flag_url": "/img/flags/US.png",
         "created_at": "2024-01-29T10:30:00Z"
@@ -404,6 +442,8 @@ See [Orders](/docs/api/orders) for detailed documentation.
   }
 }
 ```
+
+*Note: Orders are automatically filtered by your preferred currency. IQD users will only see IQD orders with amounts in Iraqi Dinars.*
 
 
 ## Error Handling

@@ -38,6 +38,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
 ```json
 {
   "success": true,
@@ -78,6 +79,47 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 }
 ```
 
+**IQD User Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "packages": [
+      {
+        "package_code": "TOPUP_PXOO225PI",
+        "name": "Iraq 3GB 30Days",
+        "data_amount_gb": 3,
+        "validity_days": 30,
+        "cost": 13939,
+        "currency": "IQD",
+        "features": {
+          "is_rechargeable": true
+        },
+        "is_unlimited": false
+      },
+      {
+        "package_code": "turkey-7days-1gb-topup",
+        "name": "Turkey 1GB 7Days",
+        "data_amount_gb": 1,
+        "validity_days": 7,
+        "cost": 3234,
+        "currency": "IQD",
+        "features": {
+          "is_rechargeable": true
+        },
+        "is_unlimited": false
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 8,
+      "total_pages": 1
+    }
+  }
+}
+```
+
 ### Package Fields
 
 | Field | Type | Description |
@@ -86,8 +128,8 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | name | String | Package display name |
 | data_amount_gb | Number | Data allowance in GB |
 | validity_days | Integer | Validity period in days |
-| cost | Number | Your cost price |
-| currency | String | Price currency (always "USD") |
+| cost | Number | Your cost price in user's preferred currency |
+| currency | String | Currency code (USD or IQD based on user preference) |
 | features | Object | Package features object |
 | features.is_rechargeable | Boolean | Always true for topup packages |
 | is_unlimited | Boolean | Unlimited data flag |
@@ -181,6 +223,12 @@ See [Packages endpoint](/docs/api/packages#error-responses) for common authentic
 ```
 
 ## Important Notes
+
+### Multi-Currency Pricing
+- **Pricing Display**: Topup prices are shown in your preferred currency (USD or IQD)
+- **Currency Conversion**: IQD prices are converted using real-time exchange rates
+- **Currency Preference**: Set your preferred currency in the business dashboard settings
+- **Format**: USD prices show 2 decimals, IQD prices are whole numbers
 
 ### Provider-Agnostic Response
 - Package codes are cleaned and standardized

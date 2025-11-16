@@ -30,6 +30,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
 ```json
 {
   "success": true,
@@ -40,13 +41,24 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 }
 ```
 
+**IQD User Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "balance": 1980000,
+    "currency": "IQD"
+  }
+}
+```
+
 ### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
 | success | Boolean | Request success status |
-| data.balance | Number | Current account balance |
-| data.currency | String | Currency code (always USD) |
+| data.balance | Number | Current account balance in user's preferred currency |
+| data.currency | String | Currency code based on user's preference (USD or IQD) |
 
 ## Examples
 
@@ -270,6 +282,9 @@ This endpoint is subject to the standard rate limit of 1000 requests per hour. R
 
 ## Notes
 
-- Balance is always returned in USD
-- This endpoint returns real-time balance information
+- Balance is returned in the user's preferred currency (USD or IQD)
+- Currency preference can be set in the business dashboard settings
+- This endpoint returns real-time balance information from the multi-currency wallet system
 - Use this endpoint to verify funds before placing orders
+- IQD balances are shown as whole numbers (no decimals)
+- USD balances are shown with 2 decimal places

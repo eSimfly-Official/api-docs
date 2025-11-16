@@ -43,6 +43,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
 ```json
 {
   "success": true,
@@ -54,6 +55,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "package_name": "United States 1GB 7Days",
         "package_code": "PHAJHEAYP",
         "amount": 1.44,
+        "currency": "USD",
         "status": "completed",
         "flag_url": "/img/flags/US.png",
         "created_at": "2024-01-15T10:30:00Z"
@@ -64,6 +66,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "package_name": "Europe Regional 5GB 30Days",
         "package_code": "EUROP5GB30",
         "amount": 5.50,
+        "currency": "USD",
         "status": "completed",
         "flag_url": "/img/flags/EU.png",
         "created_at": "2024-01-14T15:45:00Z"
@@ -78,6 +81,38 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
       "limit": 20,
       "total": 156,
       "total_pages": 8
+    }
+  }
+}
+```
+
+**IQD User Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "orders": [
+      {
+        "id": 12347,
+        "order_reference": "ES-1234567892-GHI",
+        "package_name": "Iraq 2GB 15Days",
+        "package_code": "IRQ2GB15",
+        "amount": 6600,
+        "currency": "IQD",
+        "status": "completed",
+        "flag_url": "/img/flags/IQ.png",
+        "created_at": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "summary": {
+      "total_orders": 25,
+      "total_revenue": 165000
+    },
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 25,
+      "total_pages": 2
     }
   }
 }
@@ -99,8 +134,9 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | id | Integer | Order ID |
 | order_reference | String | Unique order reference |
 | package_name | String | eSIM package name |
-| package_code | String | Package code (Airalo prefixes are automatically removed) |
-| amount | Number | Order amount in USD |
+| package_code | String | Package code |
+| amount | Number | Order amount in user's preferred currency |
+| currency | String | Order currency (USD or IQD based on user preference) |
 | status | String | Order status |
 | flag_url | String | Country flag image URL |
 | created_at | String | Order creation timestamp (ISO 8601) |
@@ -110,7 +146,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | Field | Type | Description |
 |-------|------|-------------|
 | total_orders | Integer | Total completed orders count |
-| total_revenue | Number | Total revenue from completed orders |
+| total_revenue | Number | Total revenue from completed orders in user's preferred currency |
 
 ### Pagination Object Fields
 
@@ -381,11 +417,12 @@ This endpoint is subject to the standard rate limit of 1000 requests per hour. R
 
 ## Notes
 
+- **Currency Filtering**: Only orders in your preferred currency are returned
+- **Multi-Currency Support**: USD users see only USD orders, IQD users see only IQD orders
+- **Currency Preference**: Set your preferred currency in the business dashboard settings
 - Only your own orders are returned
-- Summary statistics only include completed orders
-- Package codes from Airalo have the "airalo_" prefix automatically removed
+- Summary statistics only include completed orders in your preferred currency
 - Maximum 100 orders can be returned per request
 - Use pagination to retrieve all orders
 - The `flag_url` field may be null for some orders
-- Order amounts are always in USD
 - Consider caching order data for reporting purposes

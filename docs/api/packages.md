@@ -39,6 +39,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ### Success Response (200 OK)
 
+**USD User Example:**
 ```json
 {
   "success": true,
@@ -52,6 +53,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "data_amount_gb": 1,
         "validity_days": 7,
         "cost": 1.44,
+        "currency": "USD",
         "features": {
           "voice_minutes": 0,
           "sms_count": 0,
@@ -88,6 +90,53 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 }
 ```
 
+**IQD User Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "packages": [
+      {
+        "package_code": "PHAJHEAYP",
+        "name": "United States 1GB 7Days",
+        "region": "United States",
+        "type": "local",
+        "data_amount_gb": 1,
+        "validity_days": 7,
+        "cost": 1901,
+        "currency": "IQD",
+        "features": {
+          "voice_minutes": 0,
+          "sms_count": 0,
+          "is_rechargeable": true
+        },
+        "is_unlimited": false,
+        "has_voice": false,
+        "has_sms": false,
+        "locationNetworkList": [
+          {
+            "locationName": "United States",
+            "locationLogo": "/images/flags/us.png",
+            "operatorList": [
+              {
+                "operatorName": "Verizon",
+                "networkType": "5G"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 245,
+      "totalPages": 5
+    }
+  }
+}
+```
+
 ### Package Fields
 
 | Field | Type | Description |
@@ -98,7 +147,8 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | type | String | Package type ("local", "regional", "global") |
 | data_amount_gb | Number | Data allowance in GB |
 | validity_days | Integer | Validity period in days |
-| cost | Number | Your cost price |
+| cost | Number | Your cost price in user's preferred currency |
+| currency | String | Currency code (USD or IQD based on user preference) |
 | features | Object | Package features object |
 | features.voice_minutes | Integer | Voice minutes included (0 if none) |
 | features.sms_count | Integer | SMS messages included (0 if none) |
@@ -329,6 +379,9 @@ Not a business account:
 
 ## Notes
 
+- **Multi-Currency Pricing**: Prices are shown in your preferred currency (USD or IQD)
+- **Currency Conversion**: IQD prices are converted using real-time exchange rates
+- **Currency Preference**: Set your preferred currency in the business dashboard settings
 - Packages are sorted: local plans first (sorted by GB, then unlimited by days), followed by regional, then global
 - Only packages with 1GB or more data are returned (small packages under 1GB are filtered out)
 - Duplicate unlimited plans are filtered, showing only the cheapest option per duration
