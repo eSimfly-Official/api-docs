@@ -154,7 +154,6 @@ Documentation includes integrated analytics to track:
 ## 🆘 Support
 
 - **Developer Support**: support@esimfly.net
-- **API Status**: [status.esimfly.net](https://status.esimfly.net)
 - **Live Chat**: Available in [Business Dashboard](https://esimfly.net/business-dashboard)
 
 ## 📄 License
@@ -168,7 +167,7 @@ This documentation is licensed under [CC BY-NC-SA 4.0](https://creativecommons.o
 - [eSIMfly Website](https://esimfly.net)
 - [Business Solutions](https://esimfly.net/business)
 - [Pricing](https://esimfly.net/pricing)
-- [Blog & Updates](https://esimfly.net/blog)
+- [Blog & Updates](https://blog.esimfly.net)
 - [Contact Sales](https://esimfly.net/contact)
 
 ---

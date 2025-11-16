@@ -165,7 +165,6 @@ We follow a strict deprecation policy:
 
 ## Support
 
-- **API Status**: [status.esimfly.net](https://status.esimfly.net)
 - **Documentation**: [docs.esimfly.net](https://docs.esimfly.net)
 - **Support Email**: support@esimfly.net
 - **GitHub Issues**: [github.com/esimfly/api-docs/issues](https://github.com/esimfly/api-docs/issues)

@@ -285,7 +285,7 @@ We perform:
 
 - **Security issues**: security@esimfly.net
 - **General support**: support@esimfly.net
-- **Documentation**: docs.esimfly.net
+- **Documentation**: [docs.esimfly.net](https://docs.esimfly.net)
 
 ## 🏆 Hall of Fame
 
