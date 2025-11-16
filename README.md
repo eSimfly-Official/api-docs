@@ -16,8 +16,6 @@ Our API documentation covers:
 - 🔐 **Authentication** - HMAC-SHA256 security implementation
 - 📡 **API Reference** - Complete endpoint documentation
 - 💡 **Code Examples** - Node.js, Python, PHP, cURL samples
-- 🎣 **Webhooks** - Real-time event notifications
-- ⚡ **Best Practices** - Rate limiting, error handling, optimization
 - 🛠️ **Testing Tools** - Interactive API playground
 
 ## 🚀 For Developers
