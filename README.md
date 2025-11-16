@@ -35,62 +35,6 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 
 [Get your API credentials →](https://esimfly.net/business-dashboard/settings)
 
-## 📦 Installation (For Contributing)
-
-```bash
-npm install
-# or
-yarn install
-```
-
-## 🔧 Local Development
-
-```bash
-npm run start
-# or
-yarn start
-```
-
-This command starts a local development server at `http://localhost:3000` with live reload.
-
-## 🏗️ Build
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-Generates static content into the `build` directory ready for deployment.
-
-## 📂 Project Structure
-
-```
-documentation/
-├── docs/               # Markdown documentation files
-│   ├── intro.md       # Introduction & overview
-│   ├── quick-start.md # Quick start guide
-│   ├── api-authentication.md
-│   ├── api/           # API endpoint documentation
-│   │   ├── balance.md
-│   │   ├── packages.md
-│   │   ├── create-order.md
-│   │   ├── esims.md
-│   │   └── ...
-│   ├── examples.md    # SDK code examples
-│   └── webhooks.md    # Webhook documentation
-├── src/               # React components & pages
-├── static/            # Static assets (images, files)
-├── docusaurus.config.js
-└── sidebars.js        # Sidebar navigation structure
-```
-
-## 🎨 Customization
-
-- **Theme**: Edit `src/css/custom.css`
-- **Configuration**: Edit `docusaurus.config.js`
-- **Navigation**: Edit `sidebars.js`
-
 ## 🔍 SEO & Discoverability
 
 This documentation is optimized for:
@@ -111,26 +55,6 @@ This repository contains **PUBLIC** API documentation. We do NOT include:
 - ❌ System architecture internals
 
 Private/partner documentation is maintained separately.
-
-## 🌍 Deployment
-
-### Automatic Deployment
-The documentation automatically deploys to `docs.esimfly.net` when changes are pushed to the `main` branch.
-
-### Manual Deployment
-
-```bash
-npm run build
-# Upload the build/ directory to your hosting
-```
-
-## 📊 Analytics
-
-Documentation includes integrated analytics to track:
-- Page views and popular endpoints
-- Search queries
-- User flow and engagement
-- Geographic distribution of developers
 
 ## 🆘 Support
 
