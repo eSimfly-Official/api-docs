@@ -29,38 +29,33 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ## Request Body
 
+Simply provide the package code - everything else is handled automatically.
+
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| packageCode | String | Yes | Package code from the packages endpoint |
-| packageName | String | Yes | Package display name |
-| price | Number | Yes | Package price (must match packages endpoint) |
-| quantity | Integer | No | Number of eSIMs to order (default: 1) |
-| duration | Integer | No | Duration in days (auto-detected from package name) |
-| flagUrl | String | No | Country flag URL |
+| packageCode | String | **Yes** | Package code from the packages endpoint |
+| quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
 
-### Request Example
+The API automatically handles:
+- ✅ Package name lookup
+- ✅ Price calculation with your custom markup
+- ✅ Flag URL from database
+- ✅ Duration detection
 
-**USD User:**
+### Request Examples
+
+**Single eSIM:**
 ```json
 {
-  "packageCode": "TR1GB7D",
-  "packageName": "Turkey 1 GB 7 Days",
-  "price": 2.72,
-  "quantity": 1,
-  "duration": 7,
-  "flagUrl": "/img/flags/tr.png"
+  "packageCode": "TR1GB7D"
 }
 ```
 
-**IQD User:**
+**Multiple eSIMs:**
 ```json
 {
-  "packageCode": "TR1GB7D",
-  "packageName": "Turkey 1GB 7Days",
-  "price": 969,
-  "quantity": 1,
-  "duration": 7,
-  "flagUrl": "/img/flags/tr.png"
+  "packageCode": "merhaba-15days-2gb",
+  "quantity": 3
 }
 ```
 
@@ -240,18 +235,14 @@ GET /api/v1/business/esims/order?orderReference={orderReference}
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 
-async function createOrder(packageDetails) {
+async function createOrder(packageCode, quantity = 1) {
   const accessCode = 'esf_your_access_code';
   const secretKey = 'sk_your_secret_key';
-  
-  // Order data
+
+  // Simple order data - just packageCode!
   const orderData = {
-    packageCode: packageDetails.package_code,
-    packageName: packageDetails.name,
-    price: packageDetails.cost,
-    quantity: 1,
-    duration: packageDetails.validity_days,
-    flagUrl: packageDetails.locationNetworkList?.[0]?.locationLogo || ''
+    packageCode: packageCode,
+    quantity: quantity
   };
   
   // Generate HMAC headers
@@ -297,15 +288,7 @@ async function createOrder(packageDetails) {
 ### Multiple eSIM Order
 
 ```javascript
-const orderData = {
-  packageCode: "europe-5gb-30days",
-  packageName: "Europe 5GB 30 Days",
-  price: 15.99,
-  quantity: 5, // Order 5 eSIMs
-  flagUrl: "/img/flags/eu.png"
-};
-
-const result = await createOrder(orderData);
+const result = await createOrder("europe-5gb-30days", 5);
 
 if (result.success) {
   console.log(`Created ${result.esims.length} eSIMs`);
@@ -347,15 +330,13 @@ import time
 import uuid
 import requests
 
-def create_esim_order(package_code, package_name, price, quantity=1):
+def create_esim_order(package_code, quantity=1):
     access_code = 'esf_your_access_code'
     secret_key = 'sk_your_secret_key'
-    
-    # Order data
+
+    # Simple order data - just packageCode!
     order_data = {
         'packageCode': package_code,
-        'packageName': package_name,
-        'price': price,
         'quantity': quantity
     }
     
@@ -399,8 +380,6 @@ def create_esim_order(package_code, package_name, price, quantity=1):
 # Example usage
 result = create_esim_order(
     package_code='merhaba-7days-1gb',
-    package_name='Turkey 1 GB 7 Days',
-    price=2.72,
     quantity=1
 )
 ```
@@ -409,20 +388,20 @@ result = create_esim_order(
 
 ### 400 Bad Request
 
-Missing required fields:
+Missing packageCode:
 ```json
 {
   "success": false,
-  "message": "Missing required fields",
-  "code": "MISSING_FIELDS"
+  "message": "Missing required field: packageCode",
+  "code": "MISSING_PACKAGE_CODE"
 }
 ```
 
-Invalid package:
+Invalid package code:
 ```json
 {
   "success": false,
-  "message": "Invalid package selected",
+  "message": "Invalid package code. Package not found in database.",
   "code": "INVALID_PACKAGE"
 }
 ```
@@ -519,17 +498,17 @@ Order processing error:
 
 ## Best Practices
 
-### 1. Always Use Latest Package Data
+### 1. Get Fresh Package Data
 ```javascript
-// Good: Get fresh package data
+// Get available packages
 const packages = await getPackages({ search: 'Turkey' });
 const selectedPackage = packages.data.packages[0];
 
-const order = await createOrder({
-  packageCode: selectedPackage.package_code,
-  packageName: selectedPackage.name,
-  price: selectedPackage.cost // Use current price
-});
+// Create order with just package code
+const order = await createOrder(selectedPackage.package_code);
+
+// Or with quantity
+const order = await createOrder(selectedPackage.package_code, 3);
 ```
 
 ### 2. Handle Pending Orders
@@ -586,11 +565,11 @@ if (result.success) {
 
 ## Package Code Requirements
 
-
 ### Important Notes
 - Use the exact `package_code` from the packages endpoint
 - Do not modify or prefix package codes
-- Package codes are provider-specific but abstracted from you
+- Package codes are handled automatically by our system
+- All package formats are supported
 
 ## Quantity Limits
 
@@ -609,36 +588,29 @@ This endpoint is subject to:
 
 ### Common Issues
 
-1. **Price Mismatch Error**
-   - Ensure you're using the latest package price
-   - Package prices may change; always fetch fresh data
+1. **Invalid Package Code**
+   - Verify package code exists in packages endpoint
+   - Use exact `package_code` from packages response
+   - Package availability may change
 
 2. **Insufficient Balance**
    - Check your balance with `/balance` endpoint
    - Top up your account before placing orders
 
-3. **Invalid Package Code**
-   - Verify package code exists in packages endpoint
-   - Package availability may change
-
-4. **Pending eSIM Details**
-   - Normal for some providers during high load
-   - Check order status after 1-2 minutes
-   - Contact support if pending for > 5 minutes
+3. **Price Mismatch Error** (Standard Mode only)
+   - Only occurs if you send `price` field manually
+   - Use simplified mode (packageCode only) to avoid this
 
 ### Error Handling Example
 
 ```javascript
 try {
-  const result = await createOrder(orderData);
-  
+  const result = await createOrder('merhaba-7days-1gb');
+
   if (!result.success) {
     switch (result.code) {
       case 'INSUFFICIENT_BALANCE':
         console.error(`Need to top up: $${result.needToLoad}`);
-        break;
-      case 'PRICE_MISMATCH':
-        console.error('Price has changed, refresh package data');
         break;
       case 'INVALID_PACKAGE':
         console.error('Package no longer available');
@@ -651,6 +623,12 @@ try {
   console.error('Network error:', error.message);
 }
 ```
+
+## Legacy Integration Note
+
+If you have an existing integration that sends additional fields like `packageName`, `price`, `duration`, or `flagUrl`, it will continue to work without any changes. The API is fully backward compatible.
+
+For new integrations, we recommend using only `packageCode` (and optionally `quantity`) as shown in the examples above for simpler implementation.
 
 ## Support
 

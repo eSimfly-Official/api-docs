@@ -29,35 +29,35 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 ## Request Body
 
+Simply provide the ICCID and package code - everything else is handled automatically.
+
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | iccid | String | **Yes** | eSIM ICCID to top up |
 | packageCode | String | **Yes** | Package code from topup packages endpoint |
-| packageName | String | **Yes** | Package display name |
-| price | Number | **Yes** | Package price (for validation) |
 | quantity | Integer | No | Number of packages (default: 1) |
 
-### Example Request
+The API automatically handles:
+- ✅ Package name lookup
+- ✅ Price calculation with your custom markup
+- ✅ Topup compatibility validation
 
-**USD User:**
+### Example Requests
+
+**Single Topup:**
 ```json
 {
   "iccid": "8943108170002570328",
-  "packageCode": "turkey-7days-1gb-topup",
-  "packageName": "Turkey 1GB 7Days",
-  "price": 2.45,
-  "quantity": 1
+  "packageCode": "turkey-7days-1gb-topup"
 }
 ```
 
-**IQD User:**
+**Multiple Topups:**
 ```json
 {
   "iccid": "8943108170002570328",
   "packageCode": "TOPUP_PLGJ7UB3C",
-  "packageName": "Iraq 1GB 7Days",
-  "price": 4856,
-  "quantity": 1
+  "quantity": 2
 }
 ```
 
@@ -142,7 +142,7 @@ Missing required fields:
 ```json
 {
   "success": false,
-  "error": "Missing required fields",
+  "message": "Missing required fields: iccid, packageCode",
   "code": "MISSING_FIELDS"
 }
 ```
@@ -180,7 +180,7 @@ Invalid topup package:
 ```json
 {
   "success": false,
-  "error": "Invalid topup package",
+  "message": "Invalid top-up package code. Package not found.",
   "code": "INVALID_TOPUP_PACKAGE"
 }
 ```
@@ -212,12 +212,10 @@ See [Authentication documentation](/docs/api-authentication#error-responses) for
 ### Basic Topup Order
 
 ```javascript
+// Simple - just iccid and packageCode
 const orderData = {
   iccid: '8943108170002570328',
-  packageCode: 'TOPUP_PLGJ7UB3C',
-  packageName: 'Iraq 1GB 7Days',
-  price: 3.68,
-  quantity: 1
+  packageCode: 'TOPUP_PLGJ7UB3C'
 };
 
 const response = await fetch(
@@ -299,3 +297,9 @@ try {
 - **Prerequisites**: [Get eSIMs](/docs/api/esims) to get ICCID, then [Get Topup Packages](/docs/api/topup-packages)
 - **Follow-up**: Use [Get Orders](/docs/api/orders) to track order history
 - **Account**: Check [Get Balance](/docs/api/balance) for current balance after topup
+
+## Legacy Integration Note
+
+If you have an existing integration that sends additional fields like `packageName` or `price`, it will continue to work without any changes. The API is fully backward compatible.
+
+For new integrations, we recommend using only `iccid` and `packageCode` (and optionally `quantity`) as shown in the examples above for simpler implementation.
