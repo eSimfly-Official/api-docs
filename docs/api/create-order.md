@@ -38,7 +38,7 @@ Simply provide the package code - everything else is handled automatically.
 
 The API automatically handles:
 - ✅ Package name lookup
-- ✅ Price calculation with your custom markup
+- ✅ Price calculation
 - ✅ Flag URL from database
 - ✅ Duration detection
 
