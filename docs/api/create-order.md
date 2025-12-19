@@ -73,8 +73,9 @@ The API automatically handles:
   "packageName": "Turkey 1 GB 7 Days",
   "newBalance": 47.28,
   "currency": "USD",
-  "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
-  "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+  "lpaString": "LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
+  "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
+  "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
   "paymentMethod": "balance",
   "status": "completed",
   "amount": 2.72,
@@ -84,8 +85,9 @@ The API automatically handles:
   "esims": [
     {
       "iccid": "8932042000010078801",
-      "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
-      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+      "lpaString": "LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
+      "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
+      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
       "isPending": false
     }
@@ -103,8 +105,9 @@ The API automatically handles:
   "packageName": "Turkey 1GB 7Days",
   "newBalance": 203488,
   "currency": "IQD",
-  "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
-  "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+  "lpaString": "LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
+  "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
+  "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
   "paymentMethod": "balance",
   "status": "completed",
   "amount": 969,
@@ -114,8 +117,9 @@ The API automatically handles:
   "esims": [
     {
       "iccid": "8910300000037870123",
-      "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
-      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
+      "lpaString": "LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
+      "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
+      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
       "isPending": false
     }
@@ -168,7 +172,8 @@ When eSIM details are being processed:
 | packageName | String | Ordered package name |
 | newBalance | Number | Your updated account balance in preferred currency |
 | currency | String | Currency code (USD or IQD based on user preference) |
-| qrCodeUrl | String | QR code for eSIM installation |
+| lpaString | String | Raw LPA string (e.g., "LPA:1$smdp.address$activation-code") for QR code generation |
+| qrCodeUrl | String | Base64-encoded QR code image (data:image/png;base64,...) |
 | directAppleInstallUrl | String | Direct iPhone installation URL |
 | paymentMethod | String | Always "balance" for business orders |
 | status | String | Order status ("completed" or "pending_details") |
@@ -184,10 +189,17 @@ When eSIM details are being processed:
 | Field | Type | Description |
 |-------|------|-------------|
 | iccid | String | eSIM ICCID number |
-| qrCodeUrl | String | QR code image URL |
+| lpaString | String | Raw LPA string for QR code generation (format: "LPA:1$smdp.address$activation-code") |
+| qrCodeUrl | String | Base64-encoded QR code image |
 | directAppleInstallUrl | String | Direct Apple installation URL |
 | status | String | eSIM status ("New" or "PENDING") |
 | isPending | Boolean | Whether eSIM details are still being processed |
+
+**Using the LPA String:**
+- Extract SMDP address: Split by `$` and get second part
+- Extract activation code: Split by `$` and get third part
+- Generate your own QR code using the full LPA string
+- Display to users for manual entry
 
 ## Order Status Checking
 
