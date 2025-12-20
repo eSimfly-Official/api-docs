@@ -89,6 +89,7 @@ The API automatically handles:
       "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
       "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
+      "profileStatus": "nodownload",
       "isPending": false
     }
   ]
@@ -121,6 +122,7 @@ The API automatically handles:
       "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
       "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
+      "profileStatus": "nodownload",
       "isPending": false
     }
   ]
@@ -193,6 +195,7 @@ When eSIM details are being processed:
 | qrCodeUrl | String | Base64-encoded QR code image |
 | directAppleInstallUrl | String | Direct Apple installation URL |
 | status | String | eSIM status ("New" or "PENDING") |
+| profileStatus | String | Profile download status ("nodownload", "downloaded", "activated", etc.) |
 | isPending | Boolean | Whether eSIM details are still being processed |
 
 **Using the LPA String:**
