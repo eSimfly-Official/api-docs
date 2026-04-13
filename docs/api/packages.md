@@ -158,6 +158,34 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | has_sms | Boolean | Has SMS included |
 | locationNetworkList | Array | Detailed network coverage by location |
 
+### Additional Fields (O2, Vodafone, Bouygues Telecom Packages)
+
+These fields are included for packages from O2, Vodafone, and Bouygues Telecom carriers:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| phone_number | Object/null | Included phone number (`country`, `prefix`) |
+| network_carrier | String/null | Carrier name (e.g., "O2", "Vodafone") |
+| has_5g | Boolean | 5G support |
+| has_hotspot | Boolean | Hotspot/tethering support |
+| can_extend | Boolean | Can be extended after expiry |
+| is_recurring | Boolean | Supports auto-renewal subscription |
+| activation_policy | String | "immediate" or "first_use" |
+| data_breakdown | Object/null | UK vs roaming data split (`uk_data_gb`, `roaming_data_gb`) |
+| voice_details | Object/null | Call and text details (see below) |
+
+### Voice Details Structure
+
+| Field | Type | Description |
+|-------|------|-------------|
+| uk_calls_unlimited | Boolean | Unlimited UK calls |
+| uk_texts_unlimited | Boolean | Unlimited UK texts |
+| eu_minutes | Number/"unlimited"/null | EU call minutes included |
+| eu_texts | Number/"unlimited"/null | EU texts included |
+| international_minutes | Number/"unlimited"/null | International call minutes |
+| international_texts | Number/"unlimited"/null | International texts |
+| sms_inbound_only | Boolean | SMS receive only (no outbound) |
+
 ### LocationNetworkList Structure
 
 | Field | Type | Description |

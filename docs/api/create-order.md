@@ -36,6 +36,7 @@ Simply provide the package code - everything else is handled automatically.
 | packageCode | String | **Yes** | Package code from the packages endpoint |
 | quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
 | callbackUrl | String | No | Webhook URL for this order - we POST eSIM details here when provisioning completes. See [Webhooks](/docs/api/webhooks) |
+| recurring | Boolean | No | For O2 and Vodafone packages that support auto-renewal. Set to `true` to enable subscription. Default: `false` (one-time). Check `is_recurring` in the packages list to see which packages support this. |
 
 The API automatically handles:
 - ✅ Package name lookup
@@ -57,6 +58,21 @@ The API automatically handles:
 {
   "packageCode": "merhaba-15days-2gb",
   "quantity": 3
+}
+```
+
+**O2/Vodafone package (one-time, default):**
+```json
+{
+  "packageCode": "OT-50000MB-9999T-9999V"
+}
+```
+
+**O2/Vodafone package (with auto-renewal subscription):**
+```json
+{
+  "packageCode": "OT-50000MB-9999T-9999V",
+  "recurring": true
 }
 ```
 

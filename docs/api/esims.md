@@ -72,8 +72,11 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
           "lpa_format": "LPA:1$rsp-eu.simlessly.com$2D7F456148C640359B6A83E0E5AE34D3"
         },
         "direct_apple_installation_url": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=...",
+        "direct_android_installation_url": "https://esimsetup.android.com/esim_qrcode_provisioning?carddata=...",
         "flag_url": "/images/flags/se.png",
-        "created_at": "2024-01-29T10:30:00Z"
+        "created_at": "2024-01-29T10:30:00Z",
+        "is_pending": false,
+        "phone_number": null
       }
     ],
     "pagination": {
@@ -114,8 +117,11 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | manual_installation.activation_code | String | Activation code for manual entry |
 | manual_installation.lpa_format | String | Complete LPA format string |
 | direct_apple_installation_url | String | Direct Apple installation URL |
+| direct_android_installation_url | String | Direct Android installation URL |
 | flag_url | String | Country flag URL |
 | created_at | String | Purchase timestamp (ISO 8601) |
+| is_pending | Boolean | True if eSIM is still being provisioned (e.g., Japan local eSIM) |
+| phone_number | String/null | Phone number included with the eSIM (O2, Vodafone, Bouygues Telecom, Orange packages) |
 
 ## Status Values
 
@@ -308,22 +314,27 @@ For unlimited plans:
 The API provides multiple ways to install eSIMs:
 
 ### 1. QR Code Installation
-- **qr_code**: URL to QR code image
+- **qr_code**: QR code image (URL or base64)
 - Most common method - user scans with device camera
-- Works on all eSIM-compatible devices
+- Works on all eSIM-compatible devices (iPhone, Samsung, Google Pixel, etc.)
 
 ### 2. Direct Apple Installation
 - **direct_apple_installation_url**: One-click installation for iOS
-- Opens directly in iOS settings when clicked
+- Opens directly in iOS settings when tapped
 - Simplest method for iPhone users
 
-### 3. Manual Installation
+### 3. Direct Android Installation
+- **direct_android_installation_url**: One-click installation for Android
+- Opens eSIM setup on supported Android devices
+- Works on Samsung, Google Pixel, and other eSIM-compatible Android devices
+
+### 4. Manual Installation
 - **manual_installation**: Contains all details for manual entry
-  - **smdp_address**: Server address (e.g., "rsp-eu.simlessly.com")
-  - **activation_code**: Code to enter (e.g., "2D7F456148C640359B6A83E0E5AE34D3")
-  - **lpa_format**: Complete string for copy/paste
-- Used when QR scanning isn't available
-- Required for some Android devices
+  - **smdp_address**: Server address
+  - **activation_code**: Activation code
+  - **lpa_format**: Complete LPA string for copy/paste
+- Used when QR scanning or direct install is not available
+- Works on both iOS and Android
 
 Example manual installation data:
 ```json
@@ -331,7 +342,7 @@ Example manual installation data:
   "manual_installation": {
     "smdp_address": "rsp-eu.simlessly.com",
     "activation_code": "2D7F456148C640359B6A83E0E5AE34D3",
-    "lpa_format": "LPA:1$rsp-eu.simlessly.com$2D7F456148C640359B6A83E0E5AE34D3"
+    "lpa_format": "LPA:1..."
   }
 }
 ```
@@ -441,7 +452,7 @@ Pagination info in response:
 ## Notes
 
 - Status values are standardized across all providers
-- Package codes have provider prefixes removed (e.g., "airalo_" prefix)
+- Package codes are returned as-is from the packages endpoint
 - Countries array shows all covered destinations
 - Data usage is calculated from provider-specific formats
 - QR codes are optimized and cached for performance
