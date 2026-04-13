@@ -76,6 +76,11 @@ const sidebars = {
           id: 'api/orders',
           label: 'Orders',
         },
+        {
+          type: 'doc',
+          id: 'api/webhooks',
+          label: 'Webhooks',
+        },
       ],
     },
     {

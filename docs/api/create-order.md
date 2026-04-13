@@ -35,6 +35,7 @@ Simply provide the package code - everything else is handled automatically.
 |-------|------|----------|-------------|
 | packageCode | String | **Yes** | Package code from the packages endpoint |
 | quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
+| callbackUrl | String | No | Webhook URL for this order - we POST eSIM details here when provisioning completes. See [Webhooks](/docs/api/webhooks) |
 
 The API automatically handles:
 - ✅ Package name lookup
@@ -129,39 +130,74 @@ The API automatically handles:
 }
 ```
 
-### Pending Response (200 OK)
+### Pending Response - KDDI Japan eSIM (200 OK)
 
-When eSIM details are being processed:
+Some providers (like KDDI for Japan) require 1-5 minutes to provision eSIM profiles. You will receive a pending response.
 
+**KDDI Order Request:**
+```json
+{
+  "packageCode": "RB85_4D",
+  "callbackUrl": "https://your-server.com/webhook"
+}
+```
+
+**KDDI Pending Response:**
 ```json
 {
   "success": true,
-  "message": "Order created successfully, eSIM details will be available shortly",
-  "orderReference": "order_1692123456_ab7cd",
-  "esimId": 2503,
-  "packageName": "Turkey 1 GB 7 Days",
-  "newBalance": 204000,
-  "currency": "IQD",
-  "qrCodeUrl": "",
-  "directAppleInstallUrl": "",
-  "paymentMethod": "balance",
+  "message": "Order created successfully. KDDI eSIM is being provisioned.",
+  "orderReference": "order_1776079539762_hvkrk",
+  "packageName": "Japan 12 GB 4 Days",
   "status": "pending_details",
-  "amount": 969,
-  "profit": 91,
-  "final_price": 969,
-  "processing_time_ms": 1523,
-  "note": "The order was placed successfully but eSIM details are being processed. Please check order status in a few minutes.",
-  "esims": [
-    {
-      "iccid": "PENDING_B25081719340002_1755459260253",
-      "qrCodeUrl": "",
-      "directAppleInstallUrl": "",
-      "status": "PENDING",
-      "isPending": true
-    }
-  ]
+  "amount": 5.85,
+  "isPending": true,
+  "esims": []
 }
 ```
+
+**How to get the eSIM when it is ready:**
+
+1. **Webhook (recommended):** Configure a webhook URL on your API key or pass `callbackUrl` in the order request. We will POST the eSIM details to your URL automatically. See [Webhooks](/docs/api/webhooks).
+
+2. **Polling:** Call the order status endpoint every 15-30 seconds:
+
+**Poll Response - Still Pending:**
+```json
+{
+  "success": true,
+  "order": {
+    "esim": {
+      "iccid": null,
+      "isPending": true
+    }
+  }
+}
+```
+
+**Poll Response - eSIM Ready:**
+```json
+{
+  "success": true,
+  "order": {
+    "packageName": "Japan 12 GB 4 Days",
+    "status": "completed",
+    "esim": {
+      "iccid": "8981100000012345678",
+      "status": "New",
+      "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
+      "directAppleInstallUrl": "https://esimsetup.apple.com/...",
+      "directAndroidInstallUrl": "https://android.esim.me/...",
+      "lpaString": "LPA:1...",
+      "isPending": false,
+      "totalVolume": 12884901888,
+      "totalDuration": 4
+    }
+  }
+}
+```
+
+When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready to deliver to your customer.
 
 ### Response Fields
 
@@ -208,39 +244,32 @@ When eSIM details are being processed:
 
 You can check the status of any order using the order reference:
 
-```
-GET /api/v1/business/esims/order?orderReference={orderReference}
-```
+**Endpoint:** `GET /api/v1/business/esims/order?orderReference=YOUR_ORDER_REF`
 
 ### Status Check Response
 
-```json
-{
-  "success": true,
-  "order": {
-    "id": 2503,
-    "packageName": "Turkey 1 GB 7 Days",
-    "packageCode": "merhaba-7days-1gb",
-    "status": "completed",
-    "amount": 2.72,
-    "finalPrice": 2.72,
-    "orderDate": "2024-08-17T20:12:00Z",
-    "orderReference": "order_1692123456_ab7cd",
-    "paymentMethod": "balance",
-    "paymentStatus": "succeeded",
-    "esim": {
-      "iccid": "8932042000010078801",
-      "status": "New",
-      "qrCodeUrl": "https://qr.example.com/esim-qr-code.png",
-      "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$...",
-      "unlimited": false,
-      "totalVolume": 1073741824,
-      "totalDuration": 7,
-      "expiredTime": "2025-02-13T20:12:00Z"
-    }
-  }
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| order.id | Integer | Order ID |
+| order.packageName | String | Package name |
+| order.packageCode | String | Package code |
+| order.status | String | Order status |
+| order.amount | Number | Order amount |
+| order.orderReference | String | Order reference |
+| order.paymentMethod | String | Payment method |
+| order.paymentStatus | String | Payment status |
+| order.esim.iccid | String | eSIM ICCID (null if still pending) |
+| order.esim.status | String | eSIM status |
+| order.esim.qrCodeUrl | String | QR code URL |
+| order.esim.directAppleInstallUrl | String | Apple direct install URL |
+| order.esim.directAndroidInstallUrl | String | Android direct install URL |
+| order.esim.lpaString | String | LPA activation string |
+| order.esim.isPending | Boolean | true if eSIM is still being provisioned |
+| order.esim.totalVolume | Number | Total data in bytes |
+| order.esim.totalDuration | Number | Validity in days |
+| order.esim.expiredTime | String | Expiry date (ISO 8601) |
+
+When `isPending` is true, the eSIM is still being provisioned. Keep polling every 15-30 seconds until `isPending` becomes false.
 
 ## Examples
 
