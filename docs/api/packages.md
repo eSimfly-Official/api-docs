@@ -62,6 +62,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "is_unlimited": false,
         "has_voice": false,
         "has_sms": false,
+        "countries": ["US"],
         "locationNetworkList": [
           {
             "locationName": "United States",
@@ -76,6 +77,30 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
                 "networkType": "5G"
               }
             ]
+          }
+        ],
+        "networks": [
+          {
+            "network_id": 310,
+            "network_name": "Verizon",
+            "network_type": "5G",
+            "country_code": "us",
+            "country_name": "United States",
+            "country_iso2": "us",
+            "continent": "North America",
+            "mcc_code": "311",
+            "mnc_code": "480"
+          },
+          {
+            "network_id": 311,
+            "network_name": "T-Mobile",
+            "network_type": "5G",
+            "country_code": "us",
+            "country_name": "United States",
+            "country_iso2": "us",
+            "continent": "North America",
+            "mcc_code": "310",
+            "mnc_code": "260"
           }
         ]
       }
@@ -156,7 +181,9 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | is_unlimited | Boolean | Unlimited data flag |
 | has_voice | Boolean | Has voice minutes included |
 | has_sms | Boolean | Has SMS included |
+| countries | Array | ISO country codes covered by the package, e.g. `["AT","BE","DE"]` (eSIMfly packages). Useful for regional/global packages to see exactly which countries are included |
 | locationNetworkList | Array | Detailed network coverage by location |
+| networks | Array | Raw per-network coverage rows with MCC/MNC and continent detail (eSIMfly packages). See [Networks Structure](#networks-structure) |
 
 ### Additional Fields (O2, Vodafone, Bouygues Telecom Packages)
 
@@ -195,6 +222,26 @@ These fields are included for packages from O2, Vodafone, and Bouygues Telecom c
 | operatorList | Array | List of network operators |
 | operatorList[].operatorName | String | Network operator name |
 | operatorList[].networkType | String | Network technology (e.g., "4G/5G") |
+
+### Networks Structure
+
+The `networks` array provides the raw, per-network coverage detail for **eSIMfly packages**. Each entry is one operator in one country, including MCC/MNC codes — useful for low-level network matching or building your own coverage views.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| network_id | Integer/null | Internal network identifier |
+| network_name | String/null | Operator name (e.g., "MCI Iran") |
+| network_type | String/null | Network technology (e.g., "4G", "5G") |
+| country_code | String/null | Lowercase country code (e.g., "ir") |
+| country_name | String/null | Country name (e.g., "Iran") |
+| country_iso2 | String/null | ISO 3166-1 alpha-2 code (e.g., "ir") |
+| continent | String/null | Continent name (e.g., "Asia") |
+| mcc_code | String/null | Mobile Country Code (e.g., "432") |
+| mnc_code | String/null | Mobile Network Code (e.g., "11") |
+
+:::note
+`countries` and `networks` are populated for **eSIMfly** packages. For regional/global packages, `countries` lists every covered country and `networks` enumerates each operator per country. Other providers expose coverage via `locationNetworkList`.
+:::
 
 ## Examples
 
@@ -420,3 +467,4 @@ Not a business account:
 - Use pagination for large result sets (7000+ packages available)
 - Cache package data for 5 minutes to reduce API calls
 - Use `locationNetworkList` for detailed network coverage information by location
+- For eSIMfly packages, use `countries` for the full list of covered ISO country codes and `networks` for raw per-operator detail (MCC/MNC). Both are especially useful for regional and global packages
