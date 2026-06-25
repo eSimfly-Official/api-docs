@@ -58,7 +58,19 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "currency": "USD",
         "status": "completed",
         "flag_url": "/img/flags/US.png",
-        "created_at": "2024-01-15T10:30:00Z"
+        "created_at": "2024-01-15T10:30:00Z",
+        "esim": {
+          "iccid": "8948010010036785060",
+          "imsi": "260010185757766",
+          "msisdn": "48267753430",
+          "sim_status": "AFFECTED",
+          "esim_status": "Assigned (Not Installed)",
+          "profile_status": null,
+          "unlimited": false,
+          "total_volume": 1073741824,
+          "total_duration": 7,
+          "expired_time": "2026-08-24T17:00:31.884Z"
+        }
       },
       {
         "id": 12346,
@@ -140,6 +152,22 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | status | String | Order status |
 | flag_url | String | Country flag image URL |
 | created_at | String | Order creation timestamp (ISO 8601) |
+| esim | Object/null | eSIM details for this order (null if no eSIM is linked, e.g. balance top-ups) |
+
+### eSIM Object Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| iccid | String/null | eSIM ICCID number |
+| imsi | String/null | IMSI of the eSIM profile |
+| msisdn | String/null | Phone number (MSISDN), if any |
+| sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. |
+| esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
+| profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |
+| unlimited | Boolean | Whether the plan has unlimited data |
+| total_volume | Number/null | Total data in bytes (e.g. 1073741824 = 1 GB) |
+| total_duration | Number/null | Validity in days |
+| expired_time | String/null | Expiry date (ISO 8601) |
 
 ### Summary Object Fields
 

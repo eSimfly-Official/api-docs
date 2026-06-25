@@ -106,7 +106,15 @@ The API automatically handles:
       "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
       "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
-      "profileStatus": "nodownload",
+      "imsi": "260010185757766",
+      "msisdn": "48267753430",
+      "sim_status": "AFFECTED",
+      "esim_status": "Assigned (Not Installed)",
+      "profile_status": null,
+      "unlimited": false,
+      "total_volume": 1073741824,
+      "total_duration": 7,
+      "expired_time": "2026-08-24T17:00:31.884Z",
       "isPending": false
     }
   ]
@@ -139,7 +147,15 @@ The API automatically handles:
       "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
       "directAppleInstallUrl": "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
       "status": "New",
-      "profileStatus": "nodownload",
+      "imsi": "260010185757766",
+      "msisdn": "48267753430",
+      "sim_status": "AFFECTED",
+      "esim_status": "Assigned (Not Installed)",
+      "profile_status": null,
+      "unlimited": false,
+      "total_volume": 1073741824,
+      "total_duration": 7,
+      "expired_time": "2026-08-24T17:00:31.884Z",
       "isPending": false
     }
   ]
@@ -201,13 +217,20 @@ Some providers (like KDDI for Japan) require 1-5 minutes to provision eSIM profi
     "esim": {
       "iccid": "8981100000012345678",
       "status": "New",
+      "imsi": "260010185757766",
+      "msisdn": "48267753430",
+      "sim_status": "AFFECTED",
+      "esim_status": "Assigned (Not Installed)",
+      "profile_status": null,
       "qrCodeUrl": "data:image/png;base64,iVBORw0KGgo...",
       "directAppleInstallUrl": "https://esimsetup.apple.com/...",
       "directAndroidInstallUrl": "https://android.esim.me/...",
       "lpaString": "LPA:1...",
       "isPending": false,
+      "unlimited": false,
       "totalVolume": 12884901888,
-      "totalDuration": 4
+      "totalDuration": 4,
+      "expiredTime": "2026-08-24T17:00:31.884Z"
     }
   }
 }
@@ -247,8 +270,20 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | qrCodeUrl | String | Base64-encoded QR code image |
 | directAppleInstallUrl | String | Direct Apple installation URL |
 | status | String | eSIM status ("New" or "PENDING") |
-| profileStatus | String | Profile download status ("nodownload", "downloaded", "activated", etc.) |
+| imsi | String/null | IMSI of the eSIM profile |
+| msisdn | String/null | Phone number (MSISDN) of the eSIM, if any |
+| sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. _(Previously named `profileStatus`.)_ |
+| esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
+| profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |
+| unlimited | Boolean | Whether the plan has unlimited data |
+| total_volume | Number/null | Total data in bytes (e.g. 1073741824 = 1 GB) |
+| total_duration | Number/null | Validity in days |
+| expired_time | String/null | Expiry date (ISO 8601) |
 | isPending | Boolean | Whether eSIM details are still being processed |
+
+:::note[Breaking change]
+The field previously named **`profileStatus`** has been renamed to **`sim_status`**. If your integration reads `profileStatus`, update it to `sim_status`.
+:::
 
 **Using the LPA String:**
 - Extract SMDP address: Split by `$` and get second part
@@ -276,11 +311,17 @@ You can check the status of any order using the order reference:
 | order.paymentStatus | String | Payment status |
 | order.esim.iccid | String | eSIM ICCID (null if still pending) |
 | order.esim.status | String | eSIM status |
+| order.esim.imsi | String/null | IMSI of the eSIM profile |
+| order.esim.msisdn | String/null | Phone number (MSISDN), if any |
+| order.esim.sim_status | String/null | Provider SIM resource status (`AFFECTED`/`FREE`) — not an SM-DP+ status |
+| order.esim.esim_status | String/null | Human-readable lifecycle label (e.g. `Assigned (Not Installed)`, `Active`) |
+| order.esim.profile_status | String/null | eSIM profile (BPP) install status (`Enable`/`Disable`) |
 | order.esim.qrCodeUrl | String | QR code URL |
 | order.esim.directAppleInstallUrl | String | Apple direct install URL |
 | order.esim.directAndroidInstallUrl | String | Android direct install URL |
 | order.esim.lpaString | String | LPA activation string |
 | order.esim.isPending | Boolean | true if eSIM is still being provisioned |
+| order.esim.unlimited | Boolean | Whether the plan has unlimited data |
 | order.esim.totalVolume | Number | Total data in bytes |
 | order.esim.totalDuration | Number | Validity in days |
 | order.esim.expiredTime | String | Expiry date (ISO 8601) |

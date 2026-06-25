@@ -76,7 +76,11 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "flag_url": "/images/flags/se.png",
         "created_at": "2024-01-29T10:30:00Z",
         "is_pending": false,
-        "phone_number": null
+        "phone_number": null,
+        "imsi": "260010185757766",
+        "sim_status": "AFFECTED",
+        "esim_status": "Active",
+        "profile_status": "Enable"
       }
     ],
     "pagination": {
@@ -122,6 +126,10 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | created_at | String | Purchase timestamp (ISO 8601) |
 | is_pending | Boolean | True if eSIM is still being provisioned (e.g., Japan local eSIM) |
 | phone_number | String/null | Phone number included with the eSIM (O2, Vodafone, Bouygues Telecom, Orange packages) |
+| imsi | String/null | IMSI of the eSIM profile |
+| sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. |
+| esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
+| profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |
 
 ## Status Values
 
