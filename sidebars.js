@@ -78,6 +78,16 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'api/cancel-esim',
+          label: 'Cancel eSIM',
+        },
+        {
+          type: 'doc',
+          id: 'api/suspend-esim',
+          label: 'Suspend / Activate eSIM',
+        },
+        {
+          type: 'doc',
           id: 'api/webhooks',
           label: 'Webhooks',
         },
