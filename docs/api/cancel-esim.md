@@ -48,16 +48,13 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
 
 ## Cancellation Eligibility
 
-An eSIM can only be cancelled (and refunded) **before it has been activated or connected to a network**. Rules depend on the provider of the package:
+An eSIM can only be cancelled (and refunded) **before it has been activated or connected to a network**.
 
-| Provider | Eligible when | Not eligible when |
-|----------|---------------|-------------------|
-| eSIMfly | Newly provisioned, never connected to a network | The eSIM has connected to any network (it cannot be returned to the pool) |
-| eSIMaccess | `esim_status = GOT_RESOURCE` and SMDP status is `RELEASED`/`DELETED` | Already downloaded/installed |
-| eSIM Go | Not yet activated | Status is `ACTIVE`, `DEPLETED`, or `EXPIRED` |
-| Airalo | New / not yet activated | Status is `ACTIVE` (a refund request is submitted to Airalo for tracking) |
+| Eligible when | Not eligible when |
+|---------------|-------------------|
+| Newly provisioned — not yet downloaded, installed, used, or connected to a network | The eSIM has been activated, installed, used, or has connected to any network |
 
-In all cases, an eSIM with an activation date (QR code scanned and installed) cannot be cancelled.
+In all cases, an eSIM that has an activation date (QR code scanned and installed) cannot be cancelled. Depending on the package, a cancellation is either processed immediately or submitted as a refund request that is confirmed shortly afterwards.
 
 ## Response
 
@@ -69,7 +66,6 @@ In all cases, an eSIM with an activation date (QR code scanned and installed) ca
   "message": "All 1 eSIM cancelled successfully.",
   "data": {
     "order_reference": "order_1692123456_ab7cd",
-    "provider": "esimfly",
     "total_esims": 1,
     "cancelled_esims": 1,
     "failed_esims": 0,
@@ -83,8 +79,7 @@ In all cases, an eSIM with an activation date (QR code scanned and installed) ca
         "esimId": 15757,
         "iccid": "8948010010036785060",
         "success": true,
-        "refundAmount": 2.72,
-        "cancelData": { "provider": "esimfly", "method": "clean_and_free" }
+        "refundAmount": 2.72
       }
     ]
   }
@@ -98,13 +93,12 @@ In all cases, an eSIM with an activation date (QR code scanned and installed) ca
 | success | Boolean | Whether at least one eSIM was cancelled |
 | message | String | Human-readable summary |
 | data.order_reference | String | The order the eSIM belongs to |
-| data.provider | String | Provider of the package |
 | data.total_esims | Integer | Number of eSIMs in the order |
 | data.cancelled_esims | Integer | Number successfully cancelled |
 | data.failed_esims | Integer | Number that failed to cancel |
-| data.refunded_amount | Number | Amount refunded to your balance (0 for eSIM Go, which refunds to its own balance) |
+| data.refunded_amount | Number | Amount refunded to your balance (may be `0` for some packages whose refund is handled separately) |
 | data.currency | String | Currency of the refund |
-| data.refund_method | String | `balance`, `airalo_refund_request`, or `esimgo_balance` |
+| data.refund_method | String | How the refund was processed |
 | data.balance_credited | Boolean | Whether your account balance was credited |
 | data.partial_cancellation | Boolean | True if only some eSIMs in the order were cancelled |
 | data.cancel_results | Array | Per-eSIM cancellation result |
@@ -199,5 +193,5 @@ async function cancelEsim(iccid) {
 ## Notes
 
 - Refunds are credited to your **account balance** (not the original payment method).
-- eSIM Go cancellations refund to the eSIM Go organization balance, so `refunded_amount` is `0` and `balance_credited` is `false`.
+- For some packages the refund is handled separately, so `refunded_amount` is `0` and `balance_credited` is `false`.
 - Cancellation is **idempotent-safe**: a second attempt on an already-cancelled eSIM returns `ALREADY_CANCELLED` and does not double-refund.
