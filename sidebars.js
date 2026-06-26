@@ -98,6 +98,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'api/send-sms',
+          label: 'Send SMS',
+        },
+        {
+          type: 'doc',
           id: 'api/webhooks',
           label: 'Webhooks',
         },
