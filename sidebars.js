@@ -93,6 +93,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'api/network-events',
+          label: 'Network Events',
+        },
+        {
+          type: 'doc',
           id: 'api/webhooks',
           label: 'Webhooks',
         },
