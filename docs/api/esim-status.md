@@ -68,7 +68,7 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
     },
     "device": {
       "model": "GTF7P",
-      "imei": "357281834140498"
+      "imei": "350000000000000"
     },
     "activation_date": "2026-06-26T14:34:40.000Z",
     "last_usage_date": "2026-06-26T14:35:21.000Z",
