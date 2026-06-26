@@ -98,7 +98,7 @@ In all cases, an eSIM that has an activation date (QR code scanned and installed
 | data.failed_esims | Integer | Number that failed to cancel |
 | data.refunded_amount | Number | Amount refunded to your balance (may be `0` for some packages whose refund is handled separately) |
 | data.currency | String | Currency of the refund |
-| data.refund_method | String | How the refund was processed |
+| data.refund_method | String | How the refund was processed: `balance`, `refund_request`, or `separate` |
 | data.balance_credited | Boolean | Whether your account balance was credited |
 | data.partial_cancellation | Boolean | True if only some eSIMs in the order were cancelled |
 | data.cancel_results | Array | Per-eSIM cancellation result |
