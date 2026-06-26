@@ -60,25 +60,33 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
     "wrong_network_count": 0,
     "events": [
       {
-        "time": "2026-06-26T14:35:21",
+        "time": "2026-06-26T14:08:51",
         "event_type": "data_session",
-        "operator": "Optus",
-        "mcc": "505",
-        "mnc": "2",
-        "country": "Australia",
-        "country_iso2": "AU",
+        "req_type": "Update",
+        "operator": "Telenor",
+        "mcc": "240",
+        "mnc": "07",
+        "country": "Sweden",
+        "country_iso2": "SE",
+        "msisdn": "48000000000",
+        "apn": "plus",
         "connection_type": "4G - LTE",
+        "data_response": "9700: Success 100.00 Mb",
         "is_allowed": true
       },
       {
-        "time": "2026-06-26T14:34:40",
+        "time": "2026-06-26T13:08:49",
         "event_type": "attach",
-        "operator": "Optus",
-        "mcc": "505",
-        "mnc": "2",
-        "country": "Australia",
-        "country_iso2": "AU",
-        "connection_type": "4G - LTE",
+        "req_type": "ULR",
+        "operator": "Telenor",
+        "mcc": "240",
+        "mnc": "07",
+        "country": "Sweden",
+        "country_iso2": "SE",
+        "msisdn": null,
+        "apn": null,
+        "connection_type": null,
+        "data_response": null,
         "is_allowed": true
       }
     ]
@@ -96,14 +104,18 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
 | data.total_events | Integer | Number of events returned |
 | data.wrong_network_count | Integer | How many events were on a network **not** covered by the plan |
 | data.events | Array | The network events, newest first |
-| data.events[].time | String | When the event occurred (ISO 8601) |
-| data.events[].event_type | String | `attach`, `data_session`, `location_update`, or the raw type |
+| data.events[].time | String | When the event occurred (ISO 8601, UTC) |
+| data.events[].event_type | String | High-level category: `attach`, `data_session`, `location_update`, or the raw type |
+| data.events[].req_type | String | Specific request type, e.g. `Init`, `Update`, `Term` (data session) or `UL`, `ULR` (attach) |
 | data.events[].operator | String | Network operator the eSIM connected to |
 | data.events[].mcc | String | Mobile Country Code |
 | data.events[].mnc | String | Mobile Network Code |
 | data.events[].country | String | Country of the network |
 | data.events[].country_iso2 | String | ISO 3166-1 alpha-2 country code |
-| data.events[].connection_type | String | Radio access technology (e.g. `4G - LTE`, `5G`) |
+| data.events[].msisdn | String/null | The eSIM's phone number on the network (present on data-session events) |
+| data.events[].apn | String/null | Access Point Name used for the data session |
+| data.events[].connection_type | String/null | Radio access technology (e.g. `4G - LTE`, `5G`) |
+| data.events[].data_response | String/null | Network response for the data session, including data passed (e.g. `9700: Success 100.00 Mb`) |
 | data.events[].is_allowed | Boolean | Whether this network is covered by the plan (`false` = wrong network) |
 
 ### Error Responses
