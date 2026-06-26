@@ -88,6 +88,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'api/esim-status',
+          label: 'eSIM Status',
+        },
+        {
+          type: 'doc',
           id: 'api/webhooks',
           label: 'Webhooks',
         },
