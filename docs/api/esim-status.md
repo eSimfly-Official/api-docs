@@ -57,6 +57,7 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
     "status": "ACTIVE",
     "esim_status": "Active",
     "smdp_status": "AFFECTED",
+    "profile": "Enabled",
     "unlimited": false,
     "last_network": {
       "operator": "Optus",
@@ -90,8 +91,9 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
 | message | String | Human-readable summary |
 | data.iccid | String | The ICCID of the eSIM |
 | data.status | String | Lifecycle status (e.g. `NEW`, `ACTIVE`, `EXPIRED`, `DEPLETED`) |
-| data.esim_status | String | Raw status reported by the network |
+| data.esim_status | String | Installation/usage state: `New`, `Not Active`, `Active`, `Installed`, or `Assigned (Not Installed)` |
 | data.smdp_status | String | SM-DP+ profile status |
+| data.profile | String/null | eSIM profile installation state: `Enabled`, `Disabled`, or `Not Installed` |
 | data.unlimited | Boolean | Whether the plan is unlimited |
 | data.last_network | Object | The network the eSIM most recently connected to (null fields if it has not connected yet) |
 | data.last_network.operator | String | Network operator name |
