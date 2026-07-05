@@ -42,6 +42,19 @@ The API automatically handles:
 - ✅ Price calculation with your custom markup
 - ✅ Topup compatibility validation
 
+## eSIM Eligibility
+
+An eSIM can be topped up when its status is one of the following (status comparison is case-insensitive, so `ACTIVE`, `Active`, and `active` are all accepted):
+
+| Status | Toppable |
+|--------|----------|
+| `ACTIVE` | ✅ All providers |
+| `DEPLETED` | ✅ All providers |
+| `USED_EXPIRED` | ✅ All providers |
+| `NEW` (not yet activated) | ✅ eSIMfly-provided eSIMs only |
+
+If the eSIM is in any other status, the API returns `ESIM_NOT_TOPPABLE` (400).
+
 ### Example Requests
 
 **Single Topup:**
@@ -160,11 +173,12 @@ eSIM cannot be topped up:
 ```json
 {
   "success": false,
-  "error": "eSIM cannot be topped up. Current status: EXPIRED",
-  "message": "Only ACTIVE, DEPLETED, or USED_EXPIRED eSIMs can be topped up",
+  "message": "eSIM cannot be topped up. Current status: EXPIRED",
   "code": "ESIM_NOT_TOPPABLE"
 }
 ```
+
+Only `ACTIVE`, `DEPLETED`, or `USED_EXPIRED` eSIMs can be topped up (case-insensitive). eSIMs in `NEW` status can also be topped up when the eSIM is provided by eSIMfly.
 
 Insufficient balance:
 ```json
