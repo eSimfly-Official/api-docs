@@ -129,6 +129,10 @@ const config = {
                 href: 'https://esimfly.net/business',
               },
               {
+                label: 'eSIM API Overview',
+                href: 'https://esimfly.net/esim-api',
+              },
+              {
                 label: 'Pricing',
                 href: 'https://esimfly.net/pricing',
               },

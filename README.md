@@ -8,6 +8,8 @@ This repository contains the official public API documentation for [eSIMfly](htt
 
 **Production**: [https://docs.esimfly.net](https://docs.esimfly.net)
 
+**eSIM API overview & wholesale access**: [https://esimfly.net/esim-api](https://esimfly.net/esim-api)
+
 ## 🎯 What's Inside
 
 Our API documentation covers:
@@ -32,6 +34,10 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 ```
 
 [Get your API credentials →](https://esimfly.net/business-dashboard/settings)
+
+## 🏢 About
+
+Maintained by [eSIMfly](https://esimfly.net) · GitHub: [@eSimfly-Official](https://github.com/eSimfly-Official)
 
 ## 🆘 Support
 
