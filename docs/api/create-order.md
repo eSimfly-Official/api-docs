@@ -248,7 +248,7 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | esimId | Integer | Primary eSIM ID (for single eSIM orders) |
 | packageName | String | Ordered package name |
 | newBalance | Number | Your updated account balance in preferred currency |
-| currency | String | Currency code (USD or IQD based on user preference) |
+| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
 | lpaString | String | Raw LPA string (e.g., "LPA:1$smdp.address$activation-code") for QR code generation |
 | qrCodeUrl | String | Base64-encoded QR code image (data:image/png;base64,...) |
 | directAppleInstallUrl | String | Direct iPhone installation URL |

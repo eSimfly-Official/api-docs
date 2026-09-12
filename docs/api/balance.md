@@ -52,13 +52,43 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 }
 ```
 
+**Enterprise Account Example:**
+
+If your account is linked to an [enterprise account](/docs/enterprise-accounts), this
+endpoint returns your **enterprise balance** — the balance held on the network for
+your account — rather than a prepaid wallet. Orders and usage are billed against
+that balance.
+
+```json
+{
+  "success": true,
+  "data": {
+    "balance": 12.14,
+    "currency": "EUR",
+    "source": "enterprise",
+    "account": "Connectivity Global",
+    "live": true,
+    "as_of": "2026-09-12T08:24:36.107Z"
+  }
+}
+```
+
 ### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
 | success | Boolean | Request success status |
-| data.balance | Number | Current account balance in user's preferred currency |
-| data.currency | String | Currency code based on user's preference (USD or IQD) |
+| data.balance | Number | Current account balance in the account's currency |
+| data.currency | String | Currency code. `USD` or `IQD` for standard accounts, `EUR` for enterprise accounts |
+| data.source | String | Only present for enterprise accounts, where it is `"enterprise"`. Absent otherwise — use it to tell the two apart |
+| data.account | String | Enterprise accounts only: the company name the balance belongs to |
+| data.live | Boolean | Enterprise accounts only: `true` when read from the network just now, `false` when a recent cached value was used |
+| data.as_of | String | Enterprise accounts only: ISO 8601 timestamp of the balance reading |
+
+:::note Do not hard-code the currency
+`currency` is not limited to `USD` and `IQD`. An enterprise account reports `EUR`.
+Read the field rather than assuming which of the two it will be.
+:::
 
 ## Examples
 
@@ -282,7 +312,7 @@ This endpoint is subject to the standard rate limit of 1000 requests per hour. R
 
 ## Notes
 
-- Balance is returned in the user's preferred currency (USD or IQD)
+- Balance is returned in the account currency (`USD`, `IQD`, or `EUR` for enterprise accounts)
 - Currency preference can be set in the business dashboard settings
 - This endpoint returns real-time balance information from the multi-currency wallet system
 - Use this endpoint to verify funds before placing orders

@@ -32,6 +32,11 @@ const sidebars = {
       label: 'Authentication',
     },
     {
+      type: 'doc',
+      id: 'enterprise-accounts',
+      label: 'Enterprise Accounts',
+    },
+    {
       type: 'category',
       label: 'API Endpoints',
       collapsed: false,

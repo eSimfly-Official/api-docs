@@ -31,7 +31,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | search | String | - | Search packages by country name or destination |
-| type | String | - | Filter by package type: "local", "regional", or "global" |
+| type | String | - | Filter by package type: "local", "regional", or "global". Enterprise self-service accounts return `"enterprise"` instead — see [Enterprise accounts](/docs/enterprise-accounts) |
 | page | Integer | 1 | Page number for pagination |
 | limit | Integer | 50 | Number of results per page (max 100) |
 
@@ -166,14 +166,14 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 | Field | Type | Description |
 |-------|------|-------------|
-| package_code | String | Unique package identifier |
+| package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"PHAJHEAYP"`, `"1654977"`, or `"ent_4574805"` for an enterprise account's own package). Pass it back exactly as received |
 | name | String | Package display name |
 | region | String | Region or country name |
-| type | String | Package type ("local", "regional", "global") |
+| type | String | Package type: `"local"`, `"regional"`, `"global"`, or `"enterprise"` for an enterprise self-service account's own packages |
 | data_amount_gb | Number | Data allowance in GB |
 | validity_days | Integer | Validity period in days |
 | cost | Number | Your cost price in user's preferred currency |
-| currency | String | Currency code (USD or IQD based on user preference) |
+| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
 | features | Object | Package features object |
 | features.voice_minutes | Integer | Voice minutes included (0 if none) |
 | features.sms_count | Integer | SMS messages included (0 if none) |
@@ -366,7 +366,7 @@ The `cost` field shows your cost price. Apply your own profit margin when displa
 ## Filtering Best Practices
 
 1. **For destination search**: Use `search` parameter with country name
-2. **For package type filtering**: Use `type` parameter with values "local", "regional", or "global"
+2. **For package type filtering**: Use `type` parameter with values "local", "regional", or "global" (enterprise self-service packages return "enterprise")
 3. **Combine filters**: You can use both `search` and `type` together for precise results
 4. **Pagination**: Use `page` and `limit` for large result sets (default 50, max 100)
 5. **Caching**: Cache results for 5 minutes to reduce API calls
@@ -454,7 +454,7 @@ Not a business account:
 
 ## Notes
 
-- **Multi-Currency Pricing**: Prices are shown in your preferred currency (USD or IQD)
+- **Multi-Currency Pricing**: Prices are shown in your account currency (`USD`, `IQD`, or `EUR` for enterprise accounts)
 - **Currency Conversion**: IQD prices are converted using real-time exchange rates
 - **Currency Preference**: Set your preferred currency in the business dashboard settings
 - Packages are sorted: local plans first (sorted by GB, then unlimited by days), followed by regional, then global

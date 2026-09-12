@@ -148,7 +148,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | package_name | String | eSIM package name |
 | package_code | String | Package code |
 | amount | Number | Order amount in user's preferred currency |
-| currency | String | Order currency (USD or IQD based on user preference) |
+| currency | String | Order currency: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
 | status | String | Order status |
 | flag_url | String | Country flag image URL |
 | created_at | String | Order creation timestamp (ISO 8601) |

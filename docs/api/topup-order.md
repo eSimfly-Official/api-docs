@@ -132,7 +132,7 @@ If the eSIM is in any other status, the API returns `ESIM_NOT_TOPPABLE` (400).
 | iccid | String | eSIM ICCID that was topped up |
 | packageName | String | Name of the topup package applied |
 | newBalance | Number | Your updated account balance in preferred currency |
-| currency | String | Currency code (USD or IQD based on user preference) |
+| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
 | status | String | Order status (always "completed" for successful orders) |
 | amount | Number | Total amount charged in user's preferred currency |
 | profit | Number | Your profit from this transaction in user's preferred currency |

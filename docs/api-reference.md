@@ -30,7 +30,7 @@ See [Balance Query](/docs/api/balance) for detailed documentation.
 }
 ```
 
-*Note: Currency and balance amount depend on user's preferred currency setting (USD or IQD)*
+*Note: currency and balance depend on the account. Standard accounts use `USD` or `IQD`; [enterprise accounts](/docs/enterprise-accounts) use `EUR` and return the enterprise balance.*
 
 ## eSIM Management
 
@@ -44,7 +44,7 @@ See [Get All Packages](/docs/api/packages) for detailed documentation.
 
 **Query Parameters:**
 - `search` (optional): Search packages by country name or destination
-- `type` (optional): Filter by package type: "local", "regional", or "global"
+- `type` (optional): Filter by package type: "local", "regional", or "global". Enterprise self-service accounts return "enterprise"
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Number of results per page (default: 50, max: 100)
 

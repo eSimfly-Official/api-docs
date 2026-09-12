@@ -129,7 +129,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | data_amount_gb | Number | Data allowance in GB |
 | validity_days | Integer | Validity period in days |
 | cost | Number | Your cost price in user's preferred currency |
-| currency | String | Currency code (USD or IQD based on user preference) |
+| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
 | features | Object | Package features object |
 | features.is_rechargeable | Boolean | Always true for topup packages |
 | is_unlimited | Boolean | Unlimited data flag |
@@ -227,7 +227,7 @@ See [Packages endpoint](/docs/api/packages#error-responses) for common authentic
 ## Important Notes
 
 ### Multi-Currency Pricing
-- **Pricing Display**: Topup prices are shown in your preferred currency (USD or IQD)
+- **Pricing Display**: Topup prices are shown in your account currency (`USD`, `IQD`, or `EUR` for enterprise accounts)
 - **Currency Conversion**: IQD prices are converted using real-time exchange rates
 - **Currency Preference**: Set your preferred currency in the business dashboard settings
 - **Format**: USD prices show 2 decimals, IQD prices are whole numbers
