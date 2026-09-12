@@ -166,7 +166,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 | Field | Type | Description |
 |-------|------|-------------|
-| package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"PHAJHEAYP"`, `"1654977"`, or `"ent_4574805"` for an enterprise account's own package). Pass it back exactly as received |
+| package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"PHAJHEAYP"`, `"1654977"`, or `"ent_1234567"` for an enterprise account's own package). Pass it back exactly as received |
 | name | String | Package display name |
 | region | String | Region or country name |
 | type | String | Package type: `"local"`, `"regional"`, `"global"`, or `"enterprise"` for an enterprise self-service account's own packages |

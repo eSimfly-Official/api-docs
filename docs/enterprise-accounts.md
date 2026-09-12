@@ -25,10 +25,10 @@ field; a standard account does not.
 {
   "success": true,
   "data": {
-    "balance": 12.14,
+    "balance": 4250.00,
     "currency": "EUR",
     "source": "enterprise",
-    "account": "Connectivity Global",
+    "account": "Acme Telecom Ltd",
     "live": true,
     "as_of": "2026-09-12T08:24:36.107Z"
   }
@@ -54,7 +54,7 @@ Enterprise balances are held in EUR. If your code assumes `USD` or `IQD`, read t
 |---|---|---|
 | Packages you order | The standard eSIMfly catalogue | **Your own** packages |
 | `/esims/packages` returns | The usual catalogue | Only your packages |
-| `package_code` looks like | `"1654977"` | `"ent_4574805"` |
+| `package_code` looks like | `"1654977"` | `"ent_1234567"` |
 | `type` field | `"local"` / `"regional"` / `"global"` | `"enterprise"` |
 
 Which mode you are on is set when your account is created. Ask support if you are
@@ -72,7 +72,7 @@ enterprise portal, and the API serves **those** instead of the shared catalogue.
 
 ```json
 {
-  "package_code": "ent_4574805",
+  "package_code": "ent_1234567",
   "name": "Turkey Unlimited",
   "region": "Turkey",
   "type": "enterprise",
@@ -88,12 +88,12 @@ enterprise portal, and the API serves **those** instead of the shared catalogue.
 Order and top up exactly as normal, passing that `package_code`:
 
 ```javascript
-await api.post('/esims/order', { packageCode: 'ent_4574805', quantity: 1 });
+await api.post('/esims/order', { packageCode: 'ent_1234567', quantity: 1 });
 ```
 
 :::tip Treat package codes as opaque
 Package code formats differ between providers — `"PHAJHEAYP"`, `"1654977"`,
-`"ent_4574805"`. Never parse one or assume it is a number. Send back exactly what
+`"ent_1234567"`. Never parse one or assume it is a number. Send back exactly what
 `/esims/packages` gave you.
 :::
 

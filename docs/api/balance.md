@@ -63,10 +63,10 @@ that balance.
 {
   "success": true,
   "data": {
-    "balance": 12.14,
+    "balance": 4250.00,
     "currency": "EUR",
     "source": "enterprise",
-    "account": "Connectivity Global",
+    "account": "Acme Telecom Ltd",
     "live": true,
     "as_of": "2026-09-12T08:24:36.107Z"
   }
