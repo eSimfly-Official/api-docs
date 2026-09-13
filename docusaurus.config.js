@@ -141,6 +141,10 @@ const config = {
                 label: 'AI / LLM Integration',
                 to: '/docs/llm-integration',
               },
+              {
+                label: 'Node.js SDK (npm)',
+                href: 'https://www.npmjs.com/package/@esimfly/sdk',
+              },
             ],
           },
           {

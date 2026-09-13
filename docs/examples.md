@@ -7,7 +7,47 @@ title: Code Examples
 
 Complete code examples for integrating with the eSIMfly Business API.
 
-## Node.js / JavaScript
+## Official Node.js / TypeScript SDK
+
+The quickest way to integrate from Node.js is the official SDK — it implements everything on this page
+(HMAC signing, fresh request ids, typed errors, idempotent retries, paced catalogue sync, webhook
+signature verification) with zero runtime dependencies.
+
+```bash
+npm install @esimfly/sdk
+```
+
+```typescript
+import { ESIMfly, ESIMflyError } from '@esimfly/sdk';
+
+const esimfly = new ESIMfly({
+  accessCode: process.env.ESIMFLY_ACCESS_CODE!,
+  secretKey: process.env.ESIMFLY_SECRET_KEY!,
+});
+
+// Catalogue sync (scheduled) — paged with limit=100 and paced for the rate limit
+await esimfly.packages.sync(async (packages) => db.packages.upsertMany(packages));
+
+// Order inside your checkout, with an idempotency key so a retry can never charge twice
+try {
+  const order = await esimfly.orders.create({ packageCode: '1648812', idempotencyKey: cart.id });
+  for (const esim of order.esims) console.log(esim.iccid, esim.lpaString);
+} catch (err) {
+  if (err instanceof ESIMflyError && err.code === 'INSUFFICIENT_BALANCE') notifyOps(err.response);
+  else throw err;
+}
+
+// Customer "my eSIM" screen
+const usage = await esimfly.esims.usage({ iccid });
+
+// Webhooks
+import { constructWebhookEvent } from '@esimfly/sdk';
+const event = constructWebhookEvent(rawBody, req.headers['x-webhook-signature'], process.env.ESIMFLY_WEBHOOK_SECRET!);
+```
+
+Source, README and issues: [github.com/eSimfly-Official/esimfly-sdk-nodejs](https://github.com/eSimfly-Official/esimfly-sdk-nodejs) · [npm](https://www.npmjs.com/package/@esimfly/sdk).
+
+## Node.js / JavaScript (raw HTTP)
 
 ### Installation
 

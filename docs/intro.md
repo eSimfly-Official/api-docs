@@ -22,6 +22,31 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 --header 'RT-Signature: YOUR_CALCULATED_SIGNATURE'
 ```
 
+## Official SDK (Node.js / TypeScript)
+
+Using Node.js? Skip the signing code entirely:
+
+```bash
+npm install @esimfly/sdk
+```
+
+```ts
+import { ESIMfly } from '@esimfly/sdk';
+
+const esimfly = new ESIMfly({
+  accessCode: process.env.ESIMFLY_ACCESS_CODE!,
+  secretKey: process.env.ESIMFLY_SECRET_KEY!,
+});
+
+const { balance, currency } = await esimfly.balance.get();
+const order = await esimfly.orders.create({ packageCode: '1648812', idempotencyKey: 'my-order-1' });
+console.log(order.esims[0].lpaString);
+```
+
+Zero dependencies, typed responses, automatic HMAC signing, idempotent retries, paced catalogue sync
+and webhook verification. Source and full README: [github.com/eSimfly-Official/esimfly-sdk-nodejs](https://github.com/eSimfly-Official/esimfly-sdk-nodejs).
+PHP and Python SDKs are planned; until then use the [code examples](/docs/examples).
+
 ## Building with an AI assistant?
 
 Copy the [complete integration prompt](/docs/llm-integration) into ChatGPT, Claude, Cursor or Copilot. It contains every endpoint plus the recommended architecture — sync the package catalogue into your own database, use idempotency keys on orders — so the generated code stays fast and well inside the rate limits. Every endpoint page also has its own prompt.

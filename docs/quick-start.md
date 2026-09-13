@@ -26,6 +26,21 @@ Get started with the eSIMfly Business API in just a few minutes.
 
 Test your connection by checking your account balance:
 
+### Node.js with the official SDK (recommended)
+
+```bash
+npm install @esimfly/sdk
+```
+
+```javascript
+import { ESIMfly } from '@esimfly/sdk';
+
+const esimfly = new ESIMfly({ accessCode: 'esf_your_access_code', secretKey: 'sk_your_secret_key' });
+console.log(await esimfly.balance.get());
+```
+
+The SDK signs every request for you. The raw examples below show what it does under the hood.
+
 ### cURL
 
 ```bash

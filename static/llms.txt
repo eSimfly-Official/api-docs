@@ -26,6 +26,10 @@
 - [Orders](https://docs.esimfly.net/llm/orders.txt)
 - [Webhooks](https://docs.esimfly.net/llm/webhooks.txt)
 
+## SDKs
+
+- [Node.js / TypeScript SDK — @esimfly/sdk on npm](https://www.npmjs.com/package/@esimfly/sdk) · [source](https://github.com/eSimfly-Official/esimfly-sdk-nodejs)
+
 ## Human documentation
 
 - [Introduction](https://docs.esimfly.net/docs/intro)

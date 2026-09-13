@@ -7,6 +7,19 @@ architecture; do not "simplify" it by calling the API on every customer request.
 Source docs: https://docs.esimfly.net  (this file: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt)
 
 ====================================================================
+0. NODE.JS / TYPESCRIPT: USE THE OFFICIAL SDK
+====================================================================
+If the project is Node.js/TypeScript, do NOT hand-write HTTP calls: `npm install @esimfly/sdk`
+(https://github.com/eSimfly-Official/esimfly-sdk-nodejs). `new ESIMfly({ accessCode, secretKey })`
+exposes balance.get(), packages.list()/listAll()/sync(), orders.create({ packageCode, quantity,
+idempotencyKey })/get()/waitForEsim()/list(), esims.list()/find()/usage()/status()/networkEvents()/
+usageReport()/suspend()/activate()/cancel()/sendSms(), topups.packages()/create(),
+webhooks.get()/set(), plus verifyWebhookSignature()/constructWebhookEvent(). It already implements
+sections 1, 2 and 4 below (signing, fresh request ids, typed ESIMflyError with `code`, idempotent
+retries, 1 req/s catalogue paging, pending-order polling). Keep it server-side.
+For other languages, implement the HTTP contract below directly.
+
+====================================================================
 1. BASICS THAT APPLY TO EVERY REQUEST
 ====================================================================
 

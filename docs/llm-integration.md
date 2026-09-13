@@ -40,6 +40,14 @@ low-data events so you rarely need to poll usage at all. Diagnostics (live statu
 Rate limits are per API key and shown in the dashboard (typically **100 requests/minute, 1,000/hour, 10,000/day**). The design
 above keeps a typical reseller at a few hundred requests per day.
 
+## Node.js? Use the SDK
+
+If the stack is Node.js / TypeScript, tell the assistant to use the official SDK
+(`npm install @esimfly/sdk`, [GitHub](https://github.com/eSimfly-Official/esimfly-sdk-nodejs)) — it already
+implements the signing, retry, idempotency, catalogue-sync and webhook rules in these prompts, so the
+generated code is shorter and harder to get wrong. The prompts below mention it; for other languages
+they describe the raw HTTP contract.
+
 ## Complete prompt (all endpoints)
 
 Use this when you are building the whole integration. It is self-contained — the assistant does
