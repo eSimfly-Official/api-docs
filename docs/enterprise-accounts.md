@@ -124,3 +124,9 @@ Signing in takes you to the enterprise portal at
 usage and billing all live there. The standard business dashboard is not used for
 enterprise accounts — it describes a different account and is closed to avoid
 showing you the wrong numbers.
+
+**API keys and webhooks are in the portal too**, under **API**. Keys already
+issued to you keep working unchanged; create, disable and revoke them there, and
+set the one webhook endpoint the account delivers to. Only the account owner can
+change credentials — they authenticate as the owner and spend the account
+balance.
