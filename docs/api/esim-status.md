@@ -110,7 +110,7 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
 | data.device.model | String | Device model |
 | data.device.imei | String | Device IMEI |
 | data.activation_date | String/null | When the eSIM was first activated (ISO 8601), or `null` if not activated |
-| data.last_usage_date | String/null | Timestamp of the most recent usage (ISO 8601) |
+| data.last_usage_date | String/null | Timestamp of the most recent data session (ISO 8601), derived from the network event log |
 | data.expiry_date | String/null | When the plan expires (ISO 8601) |
 | data.data_usage | Object | Data usage summary |
 | data.data_usage.used_gb | Number | Data used, in GB |

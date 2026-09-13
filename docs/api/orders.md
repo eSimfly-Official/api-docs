@@ -164,7 +164,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 |-------|------|-------------|
 | iccid | String/null | eSIM ICCID number |
 | imsi | String/null | IMSI of the eSIM profile |
-| msisdn | String/null | Phone number (MSISDN), if any |
+| msisdn | String/null | The profile's home number (MSISDN) — for eSIMfly-network eSIMs a roaming-hub number (+48 prefix) regardless of where the eSIM is used |
 | sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. |
 | esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
 | profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |

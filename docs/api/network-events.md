@@ -116,7 +116,7 @@ Identify the eSIM by `iccid` (recommended) or `esimId`.
 | data.events[].mnc | String | Mobile Network Code |
 | data.events[].country | String | Country of the network |
 | data.events[].country_iso2 | String | ISO 3166-1 alpha-2 country code |
-| data.events[].msisdn | String/null | The eSIM's phone number on the network (present on data-session events) |
+| data.events[].msisdn | String/null | The profile's home MSISDN (a roaming-hub +48 number for eSIMfly-network eSIMs), present on data-session events |
 | data.events[].apn | String/null | Access Point Name used for the data session |
 | data.events[].connection_type | String/null | Radio access technology (e.g. `4G - LTE`, `5G`) |
 | data.events[].data_response | String/null | Network response for the data session, including data passed (e.g. `9700: Success 100.00 Mb`) |

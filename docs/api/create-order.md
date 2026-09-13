@@ -262,7 +262,7 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | directAppleInstallUrl | String | Direct Apple installation URL |
 | status | String | eSIM status ("New" or "PENDING") |
 | imsi | String/null | IMSI of the eSIM profile |
-| msisdn | String/null | Phone number (MSISDN) of the eSIM, if any |
+| msisdn | String/null | The profile's home number (MSISDN). For eSIMfly-network eSIMs this is a roaming-hub number (Polish +48 prefix) regardless of the country the eSIM is used in — it is what SMS delivery uses, not a local number |
 | sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. _(Previously named `profileStatus`.)_ |
 | esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
 | profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |
@@ -341,7 +341,7 @@ You can check the status of any order using the order reference:
 | order.esim.iccid | String | eSIM ICCID (null if still pending) |
 | order.esim.status | String | eSIM status |
 | order.esim.imsi | String/null | IMSI of the eSIM profile |
-| order.esim.msisdn | String/null | Phone number (MSISDN), if any |
+| order.esim.msisdn | String/null | The profile's home number (MSISDN) — a roaming-hub number (+48 prefix) for eSIMfly-network eSIMs, not a local number |
 | order.esim.sim_status | String/null | Provider SIM resource status (`AFFECTED`/`FREE`) — not an SM-DP+ status |
 | order.esim.esim_status | String/null | Human-readable lifecycle label (e.g. `Assigned (Not Installed)`, `Active`) |
 | order.esim.profile_status | String/null | eSIM profile (BPP) install status (`Enable`/`Disable`) |
