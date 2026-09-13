@@ -1,0 +1,44 @@
+# eSIMfly Business API — Balance Query (GET /balance) — prompt for AI coding assistants
+
+TASK: implement a balance check for the eSIMfly Business API and wire it into the app the way
+described under INTEGRATION PATTERN. Do not poll this endpoint.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  GET https://esimfly.net/api/v1/business/balance      (no query params, no body)
+
+RESPONSE 200
+  { "success": true, "data": { "balance": 1500.00, "currency": "USD" } }
+  Enterprise accounts additionally return:
+  { "source": "enterprise", "account": "Acme Telecom Ltd", "live": true, "as_of": "2026-09-12T08:24:36.107Z" }
+  and currency "EUR". Detect enterprise with data.source === "enterprise".
+
+ERRORS: 401 INVALID_API_KEY / INVALID_SIGNATURE / HMAC_REQUIRED, 400 INVALID_REQUEST_ID / DUPLICATE_REQUEST /
+        INVALID_TIMESTAMP, 403 INVALID_USER, 500 "Failed to fetch balance".
+
+INTEGRATION PATTERN (request budget: a handful of calls per day)
+1. Keep a local balance mirror (table or cache key). Every Create Order and Topup Order response
+   contains `newBalance` — update the mirror from that; it is free.
+2. Call GET /balance only:
+   - at checkout, to show "available funds" — cache the result for 60 seconds;
+   - from an hourly low-balance job that alerts you when balance < your threshold;
+   - after a manual top-up of your eSIMfly account, to refresh the mirror.
+3. Never call it before every order to "pre-check" funds: the order endpoint itself returns
+   INSUFFICIENT_BALANCE with currentBalance / requiredBalance / needToLoad when funds are short.
+4. Never call it in a loop, on every page view, or in a per-minute cron.
+5. Format amounts using the returned `currency`; IQD has no decimals.
+
+DELIVERABLE: a getBalance() function in the shared eSIMfly client, a cached wrapper (60 s TTL),
+and the hourly low-balance alert job.

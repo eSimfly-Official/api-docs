@@ -33,6 +33,11 @@ const sidebars = {
     },
     {
       type: 'doc',
+      id: 'llm-integration',
+      label: 'AI / LLM Integration',
+    },
+    {
+      type: 'doc',
       id: 'enterprise-accounts',
       label: 'Enterprise Accounts',
     },

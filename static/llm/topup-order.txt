@@ -1,0 +1,48 @@
+# eSIMfly Business API — Process Topup Order (POST /topup/order) — prompt for AI coding assistants
+
+TASK: implement adding data to an existing eSIM. Runs inside the customer request (after the customer
+picked a package from GET /topup/packages). Update our local eSIM record and balance mirror from the response.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/topup/order
+  Body: { "iccid": "8943108170002570328", "packageCode": "<package_code from /topup/packages>", "quantity": 1 }
+  Do NOT send price/packageName — the API looks them up and charges the current cost.
+
+ELIGIBILITY: eSIM status ACTIVE, DEPLETED or USED_EXPIRED (case-insensitive); NEW is also allowed for
+eSIMfly-provided eSIMs. Anything else -> 400 ESIM_NOT_TOPPABLE.
+
+RESPONSE 200
+  { success: true, message, orderReference: "topup_...", iccid, packageName, newBalance, currency,
+    status: "completed", amount, profit, processing_time_ms,
+    esimData: { newTotalVolumeGB, newRemainingVolumeGB, expiredTime } }
+
+ERRORS
+  400 MISSING_FIELDS | ESIM_NOT_FOUND | ESIM_NOT_TOPPABLE | INSUFFICIENT_BALANCE | INVALID_TOPUP_PACKAGE | TOPUP_NOT_SUPPORTED
+  500 "Failed to process topup order"
+
+INTEGRATION PATTERN
+1. Flow: customer opens top-up screen -> GET /topup/packages?iccid (cached 10 min) -> customer picks ->
+   POST /topup/order -> update our esims row (total/remaining GB, expiry) from esimData and our balance
+   mirror from newBalance -> store orderReference on a topups table for support.
+2. This endpoint has NO idempotency key. On a network timeout do NOT blindly retry: first call
+   GET /esims/usage/query?iccid=<iccid> and compare data.total_mb with the value you stored before the
+   top-up; if it increased, the top-up went through. Use a fresh RT-RequestID on any retry.
+3. Wrap the customer action in a local lock per ICCID so a double-click cannot send two top-ups.
+4. Map INSUFFICIENT_BALANCE / ESIM_NOT_TOPPABLE / INVALID_TOPUP_PACKAGE to clear UI messages.
+5. Do not call /balance, /esims or /orders afterwards to "confirm" — the response is authoritative.
+
+DELIVERABLE: topupEsim(iccid, packageCode) in the shared client, per-ICCID lock, timeout verification
+via usage query, and the local record updates.

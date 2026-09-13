@@ -1,0 +1,42 @@
+# eSIMfly Business API
+
+> HTTPS API for resellers to sell eSIM data packages worldwide: catalogue, ordering, top-ups,
+> usage, diagnostics and webhooks. HMAC-SHA256 authentication. Base URL https://esimfly.net/api/v1/business
+
+## Start here (AI-ready prompts)
+
+- [Complete integration prompt — all endpoints + recommended architecture](https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt): paste into your coding assistant to generate a full integration. Recommends syncing the package catalogue into your own database instead of proxying the API.
+- [AI / LLM integration guide (HTML)](https://docs.esimfly.net/docs/llm-integration)
+
+## Per-endpoint prompts
+
+- [Balance Query](https://docs.esimfly.net/llm/balance.txt)
+- [Get All Packages (catalogue sync)](https://docs.esimfly.net/llm/packages.txt)
+- [Create Order](https://docs.esimfly.net/llm/create-order.txt)
+- [Get Topup Packages](https://docs.esimfly.net/llm/topup-packages.txt)
+- [Process Topup Order](https://docs.esimfly.net/llm/topup-order.txt)
+- [List All eSIMs](https://docs.esimfly.net/llm/esims.txt)
+- [Query eSIM Usage](https://docs.esimfly.net/llm/esims-usage.txt)
+- [eSIM Status (live)](https://docs.esimfly.net/llm/esim-status.txt)
+- [Network Events](https://docs.esimfly.net/llm/network-events.txt)
+- [Usage Report](https://docs.esimfly.net/llm/usage-report.txt)
+- [Suspend / Activate eSIM](https://docs.esimfly.net/llm/suspend-esim.txt)
+- [Cancel eSIM](https://docs.esimfly.net/llm/cancel-esim.txt)
+- [Send SMS](https://docs.esimfly.net/llm/send-sms.txt)
+- [Orders](https://docs.esimfly.net/llm/orders.txt)
+- [Webhooks](https://docs.esimfly.net/llm/webhooks.txt)
+
+## Human documentation
+
+- [Introduction](https://docs.esimfly.net/docs/intro)
+- [Quick Start](https://docs.esimfly.net/docs/quick-start)
+- [Authentication (HMAC-SHA256)](https://docs.esimfly.net/docs/api-authentication)
+- [Enterprise Accounts](https://docs.esimfly.net/docs/enterprise-accounts)
+- [Full API Reference](https://docs.esimfly.net/docs/api-reference)
+- [Code Examples](https://docs.esimfly.net/docs/examples)
+
+## Optional
+
+- [eSIM API overview & wholesale access](https://esimfly.net/esim-api)
+- [Business dashboard](https://esimfly.net/business-dashboard)
+- Support: support@esimfly.net

@@ -1,0 +1,67 @@
+# eSIMfly Business API — Get All Packages (GET /esims/packages) — prompt for AI coding assistants
+
+TASK: build a CATALOGUE SYNC that copies the eSIMfly package list into our own database on a
+schedule, and serve our storefront from that database. Do NOT call this endpoint per customer
+request, per search, or per page view. Do NOT proxy it.
+
+WHY: the endpoint assembles and prices the entire multi-provider catalogue (7,000+ packages) on
+every call and paginates in memory. A local copy is faster for customers, keeps us far inside the
+rate limits, and is much cheaper for eSIMfly. Prices only change occasionally, and the order
+endpoint always charges the current price anyway (you only send packageCode).
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  GET https://esimfly.net/api/v1/business/esims/packages?page=1&limit=100
+  Query params: page (default 1), limit (default 50, max 100),
+                type = local | regional | global   (optional; enterprise self-service accounts get "enterprise"),
+                search = country/region name        (optional; ad-hoc lookups only — NOT for the sync).
+
+RESPONSE 200
+  { "success": true, "data": { "packages": [Package, ...],
+    "pagination": { "page": 1, "limit": 100, "total": 7123, "total_pages": 72 } } }
+  Package = {
+    package_code: string (OPAQUE — "PHAJHEAYP", "1654977", "ent_1234567", "merhaba-7days-1gb"),
+    name, region, type: "local"|"regional"|"global"|"enterprise",
+    data_amount_gb: number, validity_days: int, cost: number (YOUR buy price), currency: "USD"|"IQD"|"EUR",
+    features: { voice_minutes, sms_count, is_rechargeable }, is_unlimited, has_voice, has_sms,
+    countries?: ["AT","BE",...]            // ISO alpha-2, eSIMfly packages — full coverage list for regional/global
+    locationNetworkList: [{ locationName, locationLogo, operatorList: [{ operatorName, networkType }] }],
+    networks?: [{ network_id, network_name, network_type, country_code, country_name, country_iso2, continent, mcc_code, mnc_code }],
+    // O2 / Vodafone / Bouygues extras (optional): phone_number, network_carrier, has_5g, has_hotspot, can_extend,
+    // is_recurring, activation_policy: "immediate"|"first_use", data_breakdown, voice_details
+  }
+  Notes: only packages >= 1 GB are returned; sorted local -> regional -> global; duplicate unlimited
+  plans are collapsed to the cheapest per duration.
+
+SYNC ALGORITHM (implement exactly)
+1. Job runs every 6–12 hours (cron) and on demand from an admin "Sync now" button. Use a lock so
+   two syncs never overlap.
+2. run_started_at = now(). page = 1. Loop:
+     GET /esims/packages?page={page}&limit=100  (fresh RT-RequestID each time)
+     upsert every package by package_code, set last_seen_at = run_started_at, is_active = true
+     sleep 1000 ms; page++ ; stop when page > data.pagination.total_pages
+   ~72 requests for ~7,000 packages. On RATE_LIMIT_EXCEEDED wait 60 s and retry the same page (max 3).
+3. If EVERY page succeeded: UPDATE packages SET is_active = false WHERE last_seen_at < run_started_at.
+   If any page failed: skip this step, keep the previous catalogue live, alert an admin.
+4. NEVER DELETE package rows — orders, eSIMs and invoices reference package_code.
+5. Store JSON columns for features, countries, locationNetworkList, networks and provider extras.
+   Add our own columns: sell_price (cost + margin, recomputed after each sync), is_active,
+   last_seen_at, synced_at, and a search index on name/region/countries.
+6. Storefront reads (listing, search, country filter, price) hit OUR database only.
+7. Keep `cost` as the authoritative buy price; margin lives in our DB. When you show a price,
+   use sell_price; when you order, send only package_code (the API charges current cost).
+
+DELIVERABLE: migration for the packages table, the paced sync job (with lock + abort-safe
+deactivation), an admin trigger, and repository functions the storefront uses instead of the API.

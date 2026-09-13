@@ -22,6 +22,10 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 --header 'RT-Signature: YOUR_CALCULATED_SIGNATURE'
 ```
 
+## Building with an AI assistant?
+
+Copy the [complete integration prompt](/docs/llm-integration) into ChatGPT, Claude, Cursor or Copilot. It contains every endpoint plus the recommended architecture — sync the package catalogue into your own database, use idempotency keys on orders, complete pending eSIMs via webhooks — so the generated code stays fast and well inside the rate limits. Every endpoint page also has its own prompt.
+
 ## Version - V1
 
 **Version 1.0** - August 2025 - Initial Release
@@ -61,7 +65,7 @@ All API requests require HMAC-SHA256 signature authentication using:
 
 ## Rate Limit
 
-1000 API requests per hour are allowed. Rate limit information is included in response headers:
+Default limits per API key are **60 requests per minute, 1,000 per hour and 10,000 per day**. Bulk jobs (such as a catalogue sync) should be paced at one request per second. Rate limit information is included in response headers:
 - `X-RateLimit-Limit`: Maximum requests allowed
 - `X-RateLimit-Remaining`: Requests remaining
 - `X-RateLimit-Reset`: Time when limit resets

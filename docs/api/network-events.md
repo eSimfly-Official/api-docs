@@ -3,6 +3,8 @@ sidebar_position: 8
 title: Network Events
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Network Events
 
 List the recent **network events** for one of your eSIMs — each time it attached to a network or opened a data session, including when, where, which network it used, the connection type, and whether that network is covered by the plan. Useful for diagnosing "no data" reports and confirming a device is connecting to an allowed network.
@@ -14,6 +16,8 @@ Events cover up to the **last 7 days** and are returned newest-first. Available 
 ```
 POST /api/v1/business/esims/network-events
 ```
+
+<LlmPrompt id="network-events" />
 
 ## Authentication
 

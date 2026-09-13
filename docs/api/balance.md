@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Balance Query
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Balance Query
 
 Check your account balance.
@@ -12,6 +14,8 @@ Check your account balance.
 ```
 GET /api/v1/business/balance
 ```
+
+<LlmPrompt id="balance" />
 
 ## Authentication
 

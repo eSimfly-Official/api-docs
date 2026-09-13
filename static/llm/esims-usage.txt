@@ -1,0 +1,45 @@
+# eSIMfly Business API — Query eSIM Usage (GET /esims/usage/query) — prompt for AI coding assistants
+
+TASK: show a customer how much data is left on ONE eSIM. Call on demand when the customer opens the
+eSIM, cache the result, and never loop over all eSIMs with this endpoint.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  GET https://esimfly.net/api/v1/business/esims/usage/query?iccid=<iccid>
+  or  GET https://esimfly.net/api/v1/business/esims/usage/query?order_id=<orderReference>
+  Exactly one of iccid / order_id is required (prefer iccid). from_date/to_date are reserved (ignored today).
+
+RESPONSE 200
+  { success: true, data: {
+      esim: { iccid, order_id, package_name, status },                       // status: NEW|ACTIVE|EXPIRED|...
+      data: { total_mb, used_mb, remaining_mb, usage_percentage, is_unlimited },   // unlimited: total_mb = 0, remaining_mb = 0
+      validity: { days, activated_at, expires_at, is_expired } } }
+  usage_percentage is capped at 100.
+
+ERRORS
+  400 "Either iccid or order_id is required"; 404 "eSIM not found or you do not have access to it"; 401 auth errors.
+
+INTEGRATION PATTERN
+1. Trigger: customer opens "My eSIM" / taps refresh; support agent opens an eSIM. Nothing else.
+2. Cache per ICCID for 5–15 minutes (shorter while status is ACTIVE and usage_percentage > 80, e.g. 2 min).
+   Also persist the latest values on our esims row so lists and emails can render without any API call.
+3. Do NOT run this per eSIM in a cron. If we need fleet-wide usage, use the nightly GET /esims?status=ACTIVE
+   reconciliation (100 eSIMs per request) instead — it is 100x cheaper.
+4. Low-data / expiry notifications: compute from the values stored during customer views and the nightly
+   reconciliation, not from live calls.
+5. 404 means the ICCID is not on this account — treat as "not found", not as a retryable error.
+
+DELIVERABLE: getEsimUsage(iccid) with per-ICCID cache, persistence of the last known usage on our esims
+row, and the customer "remaining data" view fed from it.

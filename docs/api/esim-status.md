@@ -3,6 +3,8 @@ sidebar_position: 7
 title: eSIM Status
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # eSIM Status
 
 Get the **live status** of one of your eSIMs — current status, the network it last connected to, device details, activation/usage timestamps, and data usage — pulled directly from the network in real time. The stored record is updated with the fresh values at the same time.
@@ -12,6 +14,8 @@ Get the **live status** of one of your eSIMs — current status, the network it 
 ```
 POST /api/v1/business/esims/status
 ```
+
+<LlmPrompt id="esim-status" />
 
 ## Authentication
 

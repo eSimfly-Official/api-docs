@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Query eSIM Usage
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Query eSIM Usage
 
 Get detailed usage information for a specific eSIM by ICCID or Order ID.
@@ -12,6 +14,8 @@ Get detailed usage information for a specific eSIM by ICCID or Order ID.
 ```
 GET /api/v1/business/esims/usage/query
 ```
+
+<LlmPrompt id="esims-usage" />
 
 ## Authentication
 

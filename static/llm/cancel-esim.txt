@@ -1,0 +1,52 @@
+# eSIMfly Business API — Cancel eSIM (POST /esims/cancel) — prompt for AI coding assistants
+
+TASK: implement cancellation + refund-to-balance for eSIMs that have NOT been activated / installed /
+connected yet. Cancelling one eSIM cancels every eligible eSIM in the same order (same orderReference).
+Operator or customer-initiated action only.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/cancel
+  Body: { "iccid": "8948010010036785060" }   or   { "esimId": 15757 }
+
+ELIGIBILITY: only eSIMs never downloaded / installed / used / attached to a network. Anything with an
+activation date is NOT eligible. Some packages process the refund immediately, others create a refund
+request confirmed shortly after.
+
+RESPONSE 200
+  { success: true, message: "All 1 eSIM cancelled successfully.", data: {
+      order_reference, total_esims, cancelled_esims, failed_esims,
+      refunded_amount, currency, refund_method: "balance"|"refund_request"|"separate",
+      balance_credited: boolean, partial_cancellation: boolean,
+      cancel_results: [{ esimId, iccid, success, refundAmount }] } }
+  refunded_amount may be 0 with balance_credited false when the refund is handled separately.
+
+ERRORS: 400 MISSING_IDENTIFIER; 400 ALREADY_CANCELLED (safe: no double refund); 400 NOT_ELIGIBLE with
+        details.ineligibleEsims[{ id, iccid, reason }]; 403 FORBIDDEN; 404 ESIM_NOT_FOUND.
+
+INTEGRATION PATTERN
+1. Before calling, check OUR esims row: if status is not NEW or we recorded an activation, show
+   "not refundable" without calling the API. The API is the final judge — surface NOT_ELIGIBLE reasons.
+2. Warn the operator that ALL eligible eSIMs in the order will be cancelled (partial_cancellation tells you
+   whether some were skipped).
+3. Persist the result: set our esims rows to CANCELLED, store refunded_amount / refund_method / currency on
+   the order, update the balance mirror only when balance_credited === true; if refund_method is
+   "refund_request"/"separate", mark the refund pending and reconcile later via GET /balance.
+4. Cancellation is idempotent-safe: a repeat returns ALREADY_CANCELLED. Retry once on timeout with a new
+   RT-RequestID.
+5. Never cancel in bulk from a cron; each cancellation should be an explicit human or customer action.
+
+DELIVERABLE: cancelEsim(iccid) in the shared client, pre-checks against our DB, and result persistence
+including pending refunds.

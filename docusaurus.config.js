@@ -41,6 +41,28 @@ const config = {
     locales: ['en'],
   },
 
+  // Import static/llm/*.txt as plain strings so the AI prompts are a single
+  // source of truth: served raw at /llm/<id>.txt AND rendered in the docs.
+  plugins: [
+    function llmPromptsAsSource() {
+      return {
+        name: 'llm-prompts-as-source',
+        configureWebpack() {
+          return {
+            module: {
+              rules: [
+                {
+                  test: /[\\/]static[\\/]llm[\\/][^\\/]+\.txt$/,
+                  type: 'asset/source',
+                },
+              ],
+            },
+          };
+        },
+      };
+    },
+  ],
+
   presets: [
     [
       'classic',
@@ -114,6 +136,10 @@ const config = {
               {
                 label: 'Authentication',
                 to: '/docs/api-authentication',
+              },
+              {
+                label: 'AI / LLM Integration',
+                to: '/docs/llm-integration',
               },
             ],
           },

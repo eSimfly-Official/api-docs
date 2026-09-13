@@ -1,0 +1,81 @@
+# eSIMfly Business API — Create Order (POST /esims/order) — prompt for AI coding assistants
+
+TASK: implement eSIM purchase. This is one of the few eSIMfly calls that legitimately runs inside
+a customer request. Persist everything from the response; use idempotency keys; handle pending
+orders via webhook with a bounded polling fallback.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/order
+  Body (JSON — sign the exact string you send):
+  {
+    "packageCode": "<package_code from OUR synced packages table>",   // required, opaque
+    "quantity": 1,                        // optional, 1..10 (max 10 per order)
+    "idempotency_key": "<our order id>",  // optional but ALWAYS send it (<= 200 chars, unique per purchase)
+    "callbackUrl": "https://.../webhook", // optional, per-order webhook override for pending orders
+    "recurring": false                    // optional, only for O2/Vodafone packages with is_recurring = true
+  }
+  Do NOT send price/packageName/duration — the API looks them up and charges the CURRENT cost.
+
+RESPONSE 200 (completed)
+  { success: true, message, orderReference, esimId, packageName, newBalance, currency,
+    lpaString, qrCodeUrl ("data:image/png;base64,..."), directAppleInstallUrl, paymentMethod: "balance",
+    status: "completed", amount, profit, final_price, processing_time_ms,
+    esims: [{ iccid, lpaString, qrCodeUrl, directAppleInstallUrl, directAndroidInstallUrl?, status: "New",
+              imsi, msisdn, sim_status, esim_status, profile_status, unlimited,
+              total_volume (bytes; 1073741824 = 1 GB), total_duration (days), expired_time, isPending: false }] }
+
+RESPONSE 200 (pending — e.g. Japan/KDDI, 1–5 minutes)
+  { success: true, orderReference, packageName, status: "pending_details", amount, isPending: true, esims: [] }
+
+RESPONSE 200 (idempotent replay) — same idempotency_key as an already-completed order:
+  { success: true, duplicate: true, orderReference, esimId, packageName, status: "completed", esims: [...] }
+
+ERRORS
+  400 MISSING_PACKAGE_CODE | INVALID_PACKAGE | PRICE_MISMATCH (only if you send price — don't)
+  400 INSUFFICIENT_BALANCE { currentBalance, requiredBalance, needToLoad }
+  404 PACKAGE_NOT_FOUND (enterprise ent_ code not yours / inactive)
+  409 DUPLICATE_REQUEST — a request with the same idempotency_key (or, without a key, the same
+      package) is still in flight. Wait and read the original result; do not fire again.
+  500 ORDER_PROCESSING_ERROR
+
+STATUS CHECK (pending orders only)
+  GET https://esimfly.net/api/v1/business/esims/order?orderReference=<ref>
+  -> { success, order: { id, packageName, packageCode, status, amount, finalPrice, orderDate, orderReference,
+       paymentMethod, paymentStatus, esim: { iccid|null, status, imsi, msisdn, sim_status, esim_status,
+       profile_status, qrCodeUrl, directAppleInstallUrl, directAndroidInstallUrl, lpaString, isPending,
+       unlimited, totalVolume, totalDuration, expiredTime } } }
+  Ready when order.esim.isPending === false and order.esim.iccid is set.
+
+INTEGRATION PATTERN
+1. Create OUR order row first (status "creating", our_order_id). Use our_order_id as idempotency_key.
+2. POST once. On network timeout / 5xx: retry ONCE with the SAME idempotency_key and a NEW
+   RT-RequestID. A replay returns the original order (duplicate: true) instead of charging twice.
+   If the first attempt returned a failure code, the same key may be reused for a corrected retry.
+3. Persist the full response: orderReference, esimId, packageName, amount, final_price, profit,
+   currency, status, and one esims row per item (iccid, lpaString, directAppleInstallUrl,
+   directAndroidInstallUrl, status, imsi, msisdn, total_volume, total_duration, expired_time).
+   Update the local balance mirror from newBalance.
+4. Store lpaString and render QR codes yourself; do not persist the base64 qrCodeUrl image.
+5. If status === "pending_details": mark our order "pending", show "eSIM being prepared"; complete
+   it from the esim.provisioned webhook. Fallback poll: every 15–30 s, max ~10 min, then alert support.
+6. Deliver to the customer: QR (from lpaString), directAppleInstallUrl (iOS one-tap),
+   directAndroidInstallUrl when present, and manual SM-DP+ / activation code split from lpaString
+   ("LPA:1$<smdp>$<code>").
+7. On INSUFFICIENT_BALANCE show needToLoad to the operator; do not retry automatically.
+8. Do not call /balance before every order; do not call /esims or /orders after an order to "confirm".
+
+DELIVERABLE: createOrder() in the shared client with idempotency + single retry, the order persistence
+code, the pending-order handler (webhook + bounded polling), and error mapping for the codes above.

@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Get All Packages
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Get All Packages
 
 Retrieve available eSIM packages with your pricing.
@@ -12,6 +14,8 @@ Retrieve available eSIM packages with your pricing.
 ```
 GET /api/v1/business/esims/packages
 ```
+
+<LlmPrompt id="packages" />
 
 ## Authentication
 
@@ -109,7 +113,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
       "page": 1,
       "limit": 50,
       "total": 245,
-      "totalPages": 5
+      "total_pages": 5
     }
   }
 }
@@ -156,7 +160,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
       "page": 1,
       "limit": 50,
       "total": 245,
-      "totalPages": 5
+      "total_pages": 5
     }
   }
 }
@@ -369,7 +373,7 @@ The `cost` field shows your cost price. Apply your own profit margin when displa
 2. **For package type filtering**: Use `type` parameter with values "local", "regional", or "global" (enterprise self-service packages return "enterprise")
 3. **Combine filters**: You can use both `search` and `type` together for precise results
 4. **Pagination**: Use `page` and `limit` for large result sets (default 50, max 100)
-5. **Caching**: Cache results for 5 minutes to reduce API calls
+5. **Sync, don't proxy**: copy the catalogue into your own database on a schedule (every 6–12 hours, `limit=100`, paced at 1 request/second) and serve your storefront from it. The endpoint assembles and prices the full 7,000+ package catalogue on every call, so per-request use is slow for you and expensive for everyone. See the AI prompt above or the [AI / LLM Integration guide](/docs/llm-integration)
 
 ## Error Responses
 
@@ -465,6 +469,6 @@ Not a business account:
 - Use the `type` parameter to filter packages by coverage type (local/regional/global)
 - Combine `search` and `type` parameters for more precise filtering
 - Use pagination for large result sets (7000+ packages available)
-- Cache package data for 5 minutes to reduce API calls
+- Sync the catalogue into your own database (every 6–12 hours) instead of calling this endpoint per customer request; never delete synced rows, mark them inactive
 - Use `locationNetworkList` for detailed network coverage information by location
 - For eSIMfly packages, use `countries` for the full list of covered ISO country codes and `networks` for raw per-operator detail (MCC/MNC). Both are especially useful for regional and global packages

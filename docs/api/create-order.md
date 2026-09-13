@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Create Order
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Create Order
 
 Create a new eSIM order using your account balance.
@@ -12,6 +14,8 @@ Create a new eSIM order using your account balance.
 ```
 POST /api/v1/business/esims/order
 ```
+
+<LlmPrompt id="create-order" />
 
 ## Authentication
 
@@ -37,6 +41,7 @@ Simply provide the package code - everything else is handled automatically.
 | quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
 | callbackUrl | String | No | Webhook URL for this order - we POST eSIM details here when provisioning completes. See [Webhooks](/docs/api/webhooks) |
 | recurring | Boolean | No | For O2 and Vodafone packages that support auto-renewal. Set to `true` to enable subscription. Default: `false` (one-time). Check `is_recurring` in the packages list to see which packages support this. |
+| idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
 The API automatically handles:
 - ✅ Package name lookup
@@ -291,6 +296,44 @@ The field previously named **`profileStatus`** has been renamed to **`sim_status
 - Generate your own QR code using the full LPA string
 - Display to users for manual entry
 
+## Idempotency
+
+Send an `idempotency_key` (for example your internal order id) with every order so a retry after a
+network timeout can never charge you twice:
+
+- Same key, order already completed → **200** with the original order and `"duplicate": true`:
+
+```json
+{
+  "success": true,
+  "message": "Order already processed for this idempotency key",
+  "duplicate": true,
+  "orderReference": "order_1692123456_ab7cd",
+  "esimId": 2503,
+  "packageName": "Turkey 1 GB 7 Days",
+  "status": "completed",
+  "esims": [
+    {
+      "iccid": "8932042000010078801",
+      "lpaString": "LPA:1$rsp-3104.idemia.io$DOAZJ-HYDO5-HGMLN-S9B8S",
+      "qrCodeUrl": "https://...",
+      "directAppleInstallUrl": "https://esimsetup.apple.com/...",
+      "directAndroidInstallUrl": "https://...",
+      "status": "New",
+      "isPending": false
+    }
+  ]
+}
+```
+
+- Same key while the first request is still being processed → **409** `DUPLICATE_REQUEST`. Wait and read the first result; do not send again.
+- If the first attempt **failed**, the same key can be reused for a corrected retry.
+- Without a key, only *concurrent* requests for the same package are blocked (409); sequential orders for the same package are always accepted. Use `quantity` for multiple eSIMs of one package.
+
+:::tip Recommended retry rule
+On a timeout or 5xx, retry **once** with the same `idempotency_key` and a **new** `RT-RequestID`. Never retry an order without a key.
+:::
+
 ## Order Status Checking
 
 You can check the status of any order using the order reference:
@@ -525,6 +568,17 @@ Insufficient balance:
   "currentBalance": 25.50,
   "requiredBalance": 27.20,
   "needToLoad": 1.70
+}
+```
+
+### 409 Conflict
+
+Duplicate request still in flight (same `idempotency_key`, or same package without a key):
+```json
+{
+  "success": false,
+  "message": "A request with this idempotency key is already being processed",
+  "code": "DUPLICATE_REQUEST"
 }
 ```
 

@@ -3,6 +3,8 @@ sidebar_position: 3
 title: List All eSIMs
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # List All eSIMs
 
 Retrieve all purchased eSIMs for your business account.
@@ -12,6 +14,8 @@ Retrieve all purchased eSIMs for your business account.
 ```
 GET /api/v1/business/esims
 ```
+
+<LlmPrompt id="esims" />
 
 ## Authentication
 

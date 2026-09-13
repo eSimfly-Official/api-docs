@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Get Topup Packages
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Get Topup Packages
 
 Retrieve available top-up packages for a specific eSIM with your pricing.
@@ -12,6 +14,8 @@ Retrieve available top-up packages for a specific eSIM with your pricing.
 ```
 GET /api/v1/business/topup/packages
 ```
+
+<LlmPrompt id="topup-packages" />
 
 ## Authentication
 

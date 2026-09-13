@@ -3,6 +3,8 @@ sidebar_position: 9
 title: Send SMS
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Send SMS
 
 Send an SMS message to one of your eSIMs. Useful for delivering setup instructions, alerts, or notices directly to the device.
@@ -16,6 +18,8 @@ SMS is supported on most eSIMs but not all. If the eSIM's network does not suppo
 ```
 POST /api/v1/business/esims/send-sms
 ```
+
+<LlmPrompt id="send-sms" />
 
 ## Authentication
 

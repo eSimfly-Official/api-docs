@@ -3,6 +3,8 @@ sidebar_position: 5
 title: Cancel eSIM
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Cancel eSIM
 
 Cancel an eSIM that has **not yet been activated** and refund the amount to your balance.
@@ -14,6 +16,8 @@ When an order contains multiple eSIMs (same `orderReference`), all eligible eSIM
 ```
 POST /api/v1/business/esims/cancel
 ```
+
+<LlmPrompt id="cancel-esim" />
 
 ## Authentication
 

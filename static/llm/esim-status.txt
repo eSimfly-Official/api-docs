@@ -1,0 +1,47 @@
+# eSIMfly Business API — eSIM Status, live (POST /esims/status) — prompt for AI coding assistants
+
+TASK: build a SUPPORT / DIAGNOSTIC tool that fetches the LIVE status of one eSIM straight from the
+network. This is the most expensive read in the API (it goes to the carrier in real time). It is
+on-demand only: never on page load, never in a cron, never for every eSIM.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/status
+  Body: { "iccid": "8948010010036785060" }   or   { "esimId": 15757 }   (one of them)
+
+RESPONSE 200
+  { success: true, message: "Live eSIM status retrieved", data: {
+      iccid, status: "NEW"|"ACTIVE"|"EXPIRED"|"DEPLETED", esim_status: "New"|"Not Active"|"Active"|"Installed"|"Assigned (Not Installed)",
+      smdp_status, profile: "Enabled"|"Disabled"|"Not Installed"|null, unlimited,
+      last_network: { operator, mcc, mnc, country, country_iso2, connection_type },   // null fields until first connection
+      device: { model, imei },                                                          // null until installed
+      activation_date|null, last_usage_date|null, expiry_date|null,
+      data_usage: { used_gb, total_gb|null (unlimited), unlimited } } }
+  The stored record on eSIMfly is refreshed with these values at the same time.
+
+ERRORS: 400 MISSING_IDENTIFIER; 403 FORBIDDEN (not your eSIM); 404 ESIM_NOT_FOUND; 502 PROVIDER_ERROR (network unreachable — show "try again", do not auto-retry in a loop).
+
+INTEGRATION PATTERN
+1. Expose it as a "Check live status" button in the support/admin console and (optionally) a
+   customer-facing "Diagnose my connection" action, rate-limited to e.g. 1 call per eSIM per 60 s.
+2. Use it to answer: is the profile installed? which network did it last attach to? is it active?
+   which device? — typical "no data" tickets. Pair with POST /esims/network-events for the event trail.
+3. For routine "how much data is left" use GET /esims/usage/query instead (cheaper, cacheable).
+4. Persist the returned snapshot on our esims row (last_network, device, activation_date, usage) so the
+   ticket view can show the last known state without calling again.
+5. Never call this for all eSIMs in a batch or from a scheduled job.
+
+DELIVERABLE: getLiveEsimStatus(iccid) in the shared client, a per-eSIM 60 s throttle, and the support
+console panel that renders the snapshot.

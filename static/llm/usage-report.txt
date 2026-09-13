@@ -1,0 +1,41 @@
+# eSIMfly Business API — Usage Report (POST /esims/usage-report) — prompt for AI coding assistants
+
+TASK: produce a daily data-usage report (totals, per-day, per-country, per-operator) for ONE eSIM over the
+last 7 / 14 / 30 days (max 90). On-demand report for a customer or support screen; cache it; never
+generate it for every eSIM on a schedule.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/usage-report
+  Body: { "iccid": "8948010010036785060", "days": 7 }     // days optional (default 7, max 90); esimId may replace iccid
+
+RESPONSE 200
+  { success: true, data: { iccid, period_days, start_date, end_date,
+      summary: { total_data_mb, total_data_gb, avg_daily_mb, avg_daily_gb },   // avg over days WITH usage
+      daily_usage: [{ date: "YYYY-MM-DD", data_mb, data_gb }],               // newest first, UTC days
+      by_country: [{ country, mcc, data_mb, data_gb, operators: [{ operator, mnc, data_mb, data_gb }] }] } }
+  If the eSIM has not connected yet, totals are 0 and arrays are empty.
+
+ERRORS: 400 MISSING_IDENTIFIER; 400 NOT_SUPPORTED (no reports for this eSIM — hide the feature); 403 FORBIDDEN; 404 ESIM_NOT_FOUND.
+
+INTEGRATION PATTERN
+1. Trigger from a "Usage details" tab or a support request; cache per (iccid, days) for 60 minutes.
+2. For the headline "remaining data" number use GET /esims/usage/query instead — cheaper and fresher.
+3. Offer 7 / 14 / 30 day presets; do not request 90 days by default.
+4. Render daily bars + a country/operator breakdown; keep MB precision from the API, format GB for display.
+5. Never loop this endpoint over the fleet for analytics; if fleet-level usage is needed, aggregate from
+   the nightly GET /esims reconciliation instead.
+
+DELIVERABLE: getUsageReport(iccid, days) with a 1-hour cache and the report view.

@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Orders
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Orders
 
 Retrieve your order history with detailed filtering and search options.
@@ -12,6 +14,8 @@ Retrieve your order history with detailed filtering and search options.
 ```
 GET /api/v1/business/orders
 ```
+
+<LlmPrompt id="orders" />
 
 ## Authentication
 

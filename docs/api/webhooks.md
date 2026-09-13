@@ -3,9 +3,13 @@ sidebar_position: 9
 title: Webhooks
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Webhooks
 
 Receive real-time notifications when asynchronous events complete (e.g., KDDI Japan eSIM provisioning).
+
+<LlmPrompt id="webhooks" />
 
 ## Overview
 

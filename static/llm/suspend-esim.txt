@@ -1,0 +1,42 @@
+# eSIMfly Business API — Suspend / Activate eSIM (POST /esims/suspend) — prompt for AI coding assistants
+
+TASK: implement blocking and restoring network access for an eSIM (eSIMfly-provided eSIMs only). This is
+an operator ACTION triggered from our admin/support console or a fraud/non-payment workflow — never a
+scheduled or repeated call.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/suspend
+  Body: { "iccid": "8948010010036785060", "action": "suspend" }     // or "activate"; esimId may replace iccid
+
+RESPONSE 200
+  suspend : { success: true, message: "eSIM suspended. Network access has been blocked.",   data: { iccid, action: "suspend",  esim_status: "Disconnected" } }
+  activate: { success: true, message: "eSIM activated. Network access has been restored.", data: { iccid, action: "activate", esim_status: "Active" } }
+
+ERRORS: 400 INVALID_ACTION; 400 MISSING_IDENTIFIER; 400 UNSUPPORTED_PROVIDER (not an eSIMfly eSIM — hide the action for those);
+        404 ESIM_NOT_FOUND.
+
+INTEGRATION PATTERN
+1. Show the Suspend/Activate control only for eSIMs whose package came from the eSIMfly provider
+   (packages whose `networks`/`countries` fields were populated in the catalogue sync are eSIMfly packages);
+   for others, UNSUPPORTED_PROVIDER is expected — hide the button rather than handling the error.
+2. Record every action in an audit log (who, when, why) and store our own `suspended_at` on the esims row;
+   read that field for UI state instead of calling the API to "check" whether it is suspended.
+3. Suspend does not cancel or refund; use POST /esims/cancel for refunds of unused eSIMs.
+4. Idempotent in practice: suspending an already suspended eSIM is harmless; still guard double clicks locally.
+5. Use a fresh RT-RequestID per attempt; on timeout retry once.
+
+DELIVERABLE: setEsimNetworkAccess(iccid, action) in the shared client, the audited admin action, and
+the local suspended_at bookkeeping.

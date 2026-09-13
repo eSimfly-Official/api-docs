@@ -3,6 +3,8 @@ sidebar_position: 6
 title: Suspend / Activate eSIM
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Suspend / Activate eSIM
 
 Block (suspend) or restore (activate) network access for an eSIM.
@@ -16,6 +18,8 @@ This operation is only available for **eSIMfly** eSIMs, which expose subscriber-
 ```
 POST /api/v1/business/esims/suspend
 ```
+
+<LlmPrompt id="suspend-esim" />
 
 ## Authentication
 

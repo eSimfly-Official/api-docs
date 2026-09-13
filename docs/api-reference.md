@@ -9,6 +9,8 @@ Base URL: `https://esimfly.net/api/v1/business`
 
 All API requests must include authentication headers as described in the [Authentication](/docs/api-authentication) guide.
 
+Using an AI coding assistant? See the [AI / LLM Integration](/docs/llm-integration) page for copy-paste prompts (one per endpoint and one for the whole API).
+
 ## Account Management
 
 ### Get Account Balance
@@ -503,7 +505,8 @@ Response includes pagination metadata:
 
 ## Rate Limits
 
-- Default: 1000 requests per hour
+- Default: 60 requests per minute, 1000 per hour, 10,000 per day
+- Pace bulk jobs (catalogue sync, reconciliation) at one request per second
 
 Rate limit information is included in response headers:
 - `X-RateLimit-Limit`: Maximum requests allowed (1000)

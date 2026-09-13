@@ -3,6 +3,8 @@ sidebar_position: 10
 title: Usage Report
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Usage Report
 
 Get a **daily data-usage report** for one of your eSIMs over a period (7, 14, or 30 days): total and average usage, a day-by-day breakdown, and a breakdown by country and operator. Useful for showing customers where and how much data they've used.
@@ -12,6 +14,8 @@ Get a **daily data-usage report** for one of your eSIMs over a period (7, 14, or
 ```
 POST /api/v1/business/esims/usage-report
 ```
+
+<LlmPrompt id="usage-report" />
 
 ## Authentication
 

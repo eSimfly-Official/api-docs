@@ -1,0 +1,44 @@
+# eSIMfly Business API — Orders (GET /orders) — prompt for AI coding assistants
+
+TASK: use order history for FINANCE RECONCILIATION and support search — not to learn whether an order
+succeeded (the Create Order / Topup Order response already told you). Incremental daily pulls only.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  GET https://esimfly.net/api/v1/business/orders?page=1&limit=100&status=completed&from_date=2026-09-01T00:00:00Z&to_date=2026-09-02T00:00:00Z&sort_by=created_at&sort_order=asc
+  Query: page (default 1), limit (default 20, max 100), status = all|pending|completed|failed|cancelled,
+         from_date / to_date (ISO 8601, inclusive), search (order_reference | package_name | package_code),
+         sort_by = created_at|amount|status, sort_order = asc|desc.
+
+RESPONSE 200
+  { success: true, data: {
+      orders: [{ id, order_reference, package_name, package_code, amount, currency, status, flag_url, created_at,
+                 esim: { iccid, imsi, msisdn, sim_status, esim_status, profile_status, unlimited, total_volume, total_duration, expired_time } | null }],
+      summary: { total_orders, total_revenue },        // completed orders in your account currency
+      pagination: { page, limit, total, total_pages } } }
+  Only orders in your account currency are returned. status: pending | completed | failed | cancelled.
+
+INTEGRATION PATTERN
+1. Daily reconciliation job: from_date = last successful run, to_date = now, status=all, limit=100,
+   sort_by=created_at asc; page through at 1 req/s; upsert by order_reference into our orders table and
+   flag any eSIMfly order we have no local record for (and vice-versa) for an admin to review.
+   A reseller doing 500 orders/day needs ~5 requests/day for this.
+2. Support search: GET /orders?search=<order_reference or package name>&limit=20 when an agent searches.
+3. Never poll /orders after placing an order; never use it to build customer dashboards — read our DB.
+4. Monthly statement: use summary.total_orders / total_revenue from a from_date/to_date query, one call.
+5. Store `currency` with every amount; do not assume USD.
+
+DELIVERABLE: listOrders(params) in the shared client, the incremental daily reconciliation job with
+mismatch reporting, and the support search.

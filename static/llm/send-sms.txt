@@ -1,0 +1,39 @@
+# eSIMfly Business API — Send SMS (POST /esims/send-sms) — prompt for AI coding assistants
+
+TASK: send a short text message to the device holding one of our eSIMs (setup instructions, alerts,
+notices). Event-driven, one call per message; not every eSIM supports SMS.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/send-sms
+  Body: { "iccid": "8948010010036785060", "message": "Welcome! Your eSIM is ready to use." }   // esimId may replace iccid
+  message: required, max 500 characters (long texts may be split by the network).
+
+RESPONSE 200: { "success": true, "message": "SMS sent successfully" }
+
+ERRORS: 400 MISSING_IDENTIFIER | MISSING_MESSAGE | MESSAGE_TOO_LONG | SMS_NOT_SUPPORTED (this eSIM's network
+        cannot receive SMS — treat as a capability, not a failure) | SMS_FAILED (delivery failed); 403 FORBIDDEN; 404 ESIM_NOT_FOUND.
+
+INTEGRATION PATTERN
+1. Use for transactional events only: after activation, at 80% data used, before expiry, support replies.
+   Do not use it for marketing blasts across the fleet.
+2. Validate length (<= 500) client-side; keep messages plain text.
+3. Record every send on our side (iccid, template, timestamp, result) — eSIMfly also logs it on the order.
+4. If a send returns SMS_NOT_SUPPORTED, flag the eSIM `sms_supported = false` locally and stop offering SMS for it.
+5. On SMS_FAILED or a timeout, retry at most once after 30 s with a new RT-RequestID; then give up and log.
+6. Rate: keep well below 60 requests/minute if a batch of notifications fires at once — queue them.
+
+DELIVERABLE: sendSms(iccid, message) in the shared client, a queued notification sender with per-eSIM
+capability flag, and the local send log.

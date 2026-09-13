@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Process Topup Order
 ---
 
+import LlmPrompt from '@site/src/components/LlmPrompt';
+
 # Process Topup Order
 
 Process a top-up order for a specific eSIM with automatic profit calculation.
@@ -12,6 +14,8 @@ Process a top-up order for a specific eSIM with automatic profit calculation.
 ```
 POST /api/v1/business/topup/order
 ```
+
+<LlmPrompt id="topup-order" />
 
 ## Authentication
 

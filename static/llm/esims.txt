@@ -1,0 +1,50 @@
+# eSIMfly Business API — List All eSIMs (GET /esims) — prompt for AI coding assistants
+
+TASK: use this endpoint for RECONCILIATION and SUPPORT LOOKUPS only. Our own esims table (filled from
+Create Order responses) is the source of truth for which eSIMs we sold and what we show customers.
+Do not list eSIMs from eSIMfly on customer page loads.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  GET https://esimfly.net/api/v1/business/esims?page=1&limit=100&status=ACTIVE&search=<iccid|name|code>&include_base64=false
+  Query: page (default 1), limit (default 20, max 100), status = all|NEW|ACTIVE|EXPIRED|CANCELLED|DEPLETED|DELETED,
+         search (ICCID, package name or package code), include_base64 (default false — keep it false).
+
+RESPONSE 200
+  { success: true, data: { esims: [{
+      id, iccid, package_name, package_code, countries: ["Sweden"], status,
+      data: { total_mb, used_mb, remaining_mb, usage_percentage, is_unlimited },   // unlimited: total_mb = 0, remaining_mb = 0
+      validity: { days, activated_at, expires_at, is_expired },
+      qr_code: "https://storage.esimfly.net/qr-codes/....png",
+      manual_installation: { smdp_address, activation_code, lpa_format },
+      direct_apple_installation_url, direct_android_installation_url, flag_url, created_at,
+      is_pending, phone_number, imsi, sim_status, esim_status, profile_status }],
+    pagination: { page, limit, total, total_pages } } }
+  Status mapping: NEW (not activated), ACTIVE, EXPIRED, CANCELLED, DEPLETED, DELETED.
+
+INTEGRATION PATTERN
+1. Populate our esims table from POST /esims/order responses at purchase time. Do not "import" eSIMs
+   by listing this endpoint on every dashboard view.
+2. Support lookup: GET /esims?search=<iccid>&limit=1 when an agent searches an ICCID we don't recognise.
+3. Optional nightly reconciliation (only if we need fleet-wide usage in our DB):
+   GET /esims?status=ACTIVE&limit=100, page through, pace 1 req/s, upsert usage + validity + status by iccid.
+   For a fleet of 5,000 active eSIMs that is 50 requests/night.
+4. For a single customer viewing one eSIM, use GET /esims/usage/query?iccid=... (cached 5–15 min), not this list.
+5. Never set include_base64=true in production (huge responses); render QR from lpa_format if needed.
+6. Never poll this endpoint to detect activation or expiry; derive that from the nightly job or the
+   single-eSIM lookup when the customer opens the eSIM.
+
+DELIVERABLE: listEsims(params) in the shared client, a support ICCID search, and the optional paced
+nightly reconciliation job.

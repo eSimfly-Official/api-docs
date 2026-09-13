@@ -1,0 +1,42 @@
+# eSIMfly Business API — Network Events (POST /esims/network-events) — prompt for AI coding assistants
+
+TASK: build a diagnostic view listing the last 7 days of network events (attach / data session) for one
+eSIM, highlighting connections to networks NOT covered by the plan. On-demand support tool only —
+never in crons or on ordinary page loads.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
+- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINT
+  POST https://esimfly.net/api/v1/business/esims/network-events
+  Body: { "iccid": "8948010010036785060" }   or   { "esimId": 15757 }
+
+RESPONSE 200
+  { success: true, data: { iccid, total_events, wrong_network_count,
+      events: [{ time (ISO UTC), event_type: "attach"|"data_session"|"location_update"|raw, req_type ("Init"|"Update"|"Term"|"UL"|"ULR"),
+                 operator, mcc, mnc, country, country_iso2, msisdn|null, apn|null, connection_type|null ("4G - LTE","5G"),
+                 data_response|null ("9700: Success 100.00 Mb"), is_allowed: boolean }] } }   // newest first, last 7 days
+  wrong_network_count > 0 (or any is_allowed === false) = the device latched onto a network outside the plan —
+  the usual cause of "connected but no data". Fix: airplane-mode toggle or manual network selection.
+
+ERRORS: 400 MISSING_IDENTIFIER; 400 NOT_SUPPORTED (eSIM's network does not report events); 403 FORBIDDEN; 404 ESIM_NOT_FOUND.
+
+INTEGRATION PATTERN
+1. Support console: "Show network events" button on the eSIM ticket, throttled to 1 call per eSIM per 60 s.
+2. Render a timeline; colour rows with is_allowed === false red and show the suggested customer fix.
+3. Combine with POST /esims/status (live status) for a complete "no data" diagnosis; do not call either
+   automatically when the ticket opens — only when the agent asks.
+4. Cache the response for 5 minutes per ICCID; empty events list means the eSIM has not connected yet.
+5. NOT_SUPPORTED is a normal state for some providers: hide the button, do not error.
+
+DELIVERABLE: getNetworkEvents(iccid) in the shared client with a 5-minute cache and the timeline panel.
