@@ -18,9 +18,11 @@ function HomepageHeader() {
           </Heading>
           <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
           <p className={styles.heroDescription}>
-            Integrate global eSIM connectivity into your applications with our powerful RESTful API. 
-            Enable instant data package delivery to travelers worldwide.
+            Sell eSIM data packages for 200+ countries from your own app or store. One REST API for the
+            catalog, ordering, top-ups and usage — with an official Node.js SDK, real-time webhooks and
+            copy-paste prompts for AI coding assistants.
           </p>
+          <pre className={styles.heroCode}><code>npm install @esimfly/sdk</code></pre>
           <div className={styles.buttons}>
             <Link
               className={clsx('button button--primary button--lg', styles.primaryButton)}
@@ -31,6 +33,11 @@ function HomepageHeader() {
               className={clsx('button button--outline button--lg', styles.secondaryButton)}
               to="/docs/api/balance">
               API Reference
+            </Link>
+            <Link
+              className={clsx('button button--outline button--lg', styles.secondaryButton)}
+              to="/docs/llm-integration">
+              AI Prompts
             </Link>
           </div>
         </div>

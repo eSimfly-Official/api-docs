@@ -1,15 +1,17 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
+import Link from '@docusaurus/Link';
 import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: 'Simple Integration',
+    title: 'Official SDK',
     icon: '⚡',
     description: (
       <>
-        RESTful API with clear documentation and code examples. 
-        Get up and running in minutes with our quickstart guide.
+        <code>npm install @esimfly/sdk</code> — request signing, idempotent orders, paced catalog
+        sync and webhook verification built in, zero dependencies. Other languages use the
+        documented REST API. <Link to="/docs/quick-start">Quick start →</Link>
       </>
     ),
   },
@@ -24,12 +26,13 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Real-time Management',
-    icon: '📊',
+    title: 'Real-time Webhooks',
+    icon: '📡',
     description: (
       <>
-        Monitor usage, check balances, and manage orders in real-time. 
-        Full API access to all business dashboard features.
+        Get a signed webhook the moment an eSIM is installed, changes status or runs low on
+        data — no polling. Usage, live status, network events and top-ups are one call away.{' '}
+        <Link to="/docs/api/webhooks">Webhooks →</Link>
       </>
     ),
   },
@@ -54,12 +57,13 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Developer Friendly',
-    icon: '👩‍💻',
+    title: 'Built for AI Assistants',
+    icon: '🤖',
     description: (
       <>
-        Comprehensive API documentation with clear examples. 
-        RESTful design with JSON responses for easy integration.
+        Every endpoint page has a copy-paste prompt, plus one complete prompt for the whole API
+        that already encodes the recommended architecture. Paste into ChatGPT, Claude, Cursor or
+        Copilot and start building. <Link to="/docs/llm-integration">AI integration →</Link>
       </>
     ),
   },
@@ -85,7 +89,7 @@ export default function HomepageFeatures() {
       <div className="container">
         <div className={styles.featuresHeader}>
           <h2>Why Choose eSIMfly Business API?</h2>
-          <p>Everything you need to integrate eSIM connectivity into your platform</p>
+          <p>Everything you need to sell eSIMs from your own product — SDK, REST API, webhooks and AI-ready docs</p>
         </div>
         <div className="row">
           {FeatureList.map((props, idx) => (
