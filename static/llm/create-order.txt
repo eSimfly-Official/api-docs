@@ -1,8 +1,8 @@
 # eSIMfly Business API — Create Order (POST /esims/order) — prompt for AI coding assistants
 
 TASK: implement eSIM purchase. This is one of the few eSIMfly calls that legitimately runs inside
-a customer request. Persist everything from the response; use idempotency keys; handle pending
-orders via webhook with a bounded polling fallback.
+a customer request. Persist everything from the response; use idempotency keys; handle the rare
+pending order with bounded polling.
 
 COMMON RULES (apply to every eSIMfly request)
 - Base URL: https://esimfly.net/api/v1/business
@@ -24,7 +24,6 @@ ENDPOINT
     "packageCode": "<package_code from OUR synced packages table>",   // required, opaque
     "quantity": 1,                        // optional, 1..10 (max 10 per order)
     "idempotency_key": "<our order id>",  // optional but ALWAYS send it (<= 200 chars, unique per purchase)
-    "callbackUrl": "https://.../webhook", // optional, per-order webhook override for pending orders
     "recurring": false                    // optional, only for O2/Vodafone packages with is_recurring = true
   }
   Do NOT send price/packageName/duration — the API looks them up and charges the CURRENT cost.
@@ -37,7 +36,7 @@ RESPONSE 200 (completed)
               imsi, msisdn, sim_status, esim_status, profile_status, unlimited,
               total_volume (bytes; 1073741824 = 1 GB), total_duration (days), expired_time, isPending: false }] }
 
-RESPONSE 200 (pending — e.g. Japan/KDDI, 1–5 minutes)
+RESPONSE 200 (pending — rare; a few packages are provisioned asynchronously and take a few minutes)
   { success: true, orderReference, packageName, status: "pending_details", amount, isPending: true, esims: [] }
 
 RESPONSE 200 (idempotent replay) — same idempotency_key as an already-completed order:
@@ -69,8 +68,9 @@ INTEGRATION PATTERN
    directAndroidInstallUrl, status, imsi, msisdn, total_volume, total_duration, expired_time).
    Update the local balance mirror from newBalance.
 4. Store lpaString and render QR codes yourself; do not persist the base64 qrCodeUrl image.
-5. If status === "pending_details": mark our order "pending", show "eSIM being prepared"; complete
-   it from the esim.provisioned webhook. Fallback poll: every 15–30 s, max ~10 min, then alert support.
+5. If status === "pending_details": mark our order "pending", show "eSIM being prepared"; poll
+   GET /esims/order every 15–30 s, max ~10 min; when isPending is false store the eSIM fields and
+   deliver. If still pending after that, alert support (do not re-order).
 6. Deliver to the customer: QR (from lpaString), directAppleInstallUrl (iOS one-tap),
    directAndroidInstallUrl when present, and manual SM-DP+ / activation code split from lpaString
    ("LPA:1$<smdp>$<code>").
@@ -78,4 +78,4 @@ INTEGRATION PATTERN
 8. Do not call /balance before every order; do not call /esims or /orders after an order to "confirm".
 
 DELIVERABLE: createOrder() in the shared client with idempotency + single retry, the order persistence
-code, the pending-order handler (webhook + bounded polling), and error mapping for the codes above.
+code, the pending-order handler (bounded polling), and error mapping for the codes above.

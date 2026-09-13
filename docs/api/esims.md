@@ -128,7 +128,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | direct_android_installation_url | String | Direct Android installation URL |
 | flag_url | String | Country flag URL |
 | created_at | String | Purchase timestamp (ISO 8601) |
-| is_pending | Boolean | True if eSIM is still being provisioned (e.g., Japan local eSIM) |
+| is_pending | Boolean | True if the eSIM is still being provisioned (asynchronously provisioned packages) |
 | phone_number | String/null | Phone number included with the eSIM (O2, Vodafone, Bouygues Telecom, Orange packages) |
 | imsi | String/null | IMSI of the eSIM profile |
 | sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. |

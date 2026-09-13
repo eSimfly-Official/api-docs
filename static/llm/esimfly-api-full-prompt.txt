@@ -94,10 +94,10 @@ B) ORDERS — POST /esims/order is the only way to buy.
      total_volume, total_duration, expired_time, isPending.
    - Store lpaString and render the QR code yourself (any QR library) — do not store the
      base64 `qrCodeUrl` image (large, redundant).
-   - status "pending_details" (e.g. Japan/KDDI, 1–5 min): esims[] is empty. Rely on the
-     esim.provisioned webhook (section G). Fallback: poll GET /esims/order?orderReference=…
-     every 15–30 s for at most ~10 minutes; ready when order.esim.isPending === false and
-     order.esim.iccid is set.
+   - status "pending_details" (rare; a few packages are provisioned asynchronously and take a
+     few minutes): esims[] is empty. Poll GET /esims/order?orderReference=… every 15–30 s for
+     at most ~10 minutes; ready when order.esim.isPending === false and order.esim.iccid is
+     set. If it is still pending after that, mark the order for manual follow-up.
    - Check balance BEFORE the order only if you display it; the order itself returns
      INSUFFICIENT_BALANCE with currentBalance/requiredBalance/needToLoad if funds are short.
 
@@ -133,18 +133,7 @@ F) DIAGNOSTICS — support tools only, never in crons, never on page load.
    - POST /esims/cancel  (only before activation; refunds to balance; idempotent-safe)
    - POST /esims/send-sms { message <=500 chars }
 
-G) WEBHOOKS — configure once, verify always.
-   - PUT /webhooks { "webhook_url": "https://…", "events": ["esim.provisioned"] }
-     Save the returned `secret` (whsec_…) — shown once.
-   - Verify: expected = "sha256=" + hex(HMAC-SHA256(secret, rawBody)); constant-time compare
-     with X-Webhook-Signature. Reject on mismatch (401).
-   - Dedupe on X-Webhook-Id (or data.order_reference). Respond 2xx within 10 s; do the
-     work asynchronously. Retries: immediate, 10 s, 30 s, 2 min, 10 min, then marked failed.
-   - Payload: { event: "esim.provisioned", timestamp, data: { order_reference, iccid,
-     qr_code_url, lpa_string, direct_apple_install_url, direct_android_install_url, package_name } }
-   - GET /webhooks shows the config and the last 10 deliveries.
-
-H) ORDER HISTORY / RECONCILIATION — GET /orders
+G) ORDER HISTORY / RECONCILIATION — GET /orders
    - For finance reconciliation, run daily with from_date = last run, limit=100, paginated.
    - Never poll /orders to learn whether an order succeeded; the order response tells you.
 
@@ -176,7 +165,7 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 
 3.3 POST /esims/order
   Body: { packageCode: string, quantity?: 1..10, idempotency_key?: string,
-          callbackUrl?: string, recurring?: boolean (O2/Vodafone subscription packages only) }
+          recurring?: boolean (O2/Vodafone subscription packages only) }
   -> { success, message, orderReference, esimId, packageName, newBalance, currency,
        lpaString, qrCodeUrl (data:image/png;base64,...), directAppleInstallUrl,
        paymentMethod: "balance", status: "completed"|"pending_details", amount, profit,
@@ -260,23 +249,16 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
        esim_status, profile_status, unlimited, total_volume, total_duration, expired_time } | null }],
        summary: { total_orders, total_revenue }, pagination } }
 
-3.16 Webhooks
-  PUT /webhooks { webhook_url, events: ["esim.provisioned"] } -> { success, webhook: { url, secret, events } }
-  GET /webhooks -> { success, webhook: { url, events, api_key_name }, available_events, recent_deliveries[] }
-  Delivery headers: X-Webhook-Event, X-Webhook-Signature ("sha256=<hex>"), X-Webhook-Timestamp,
-  X-Webhook-Id, User-Agent: eSIMfly-Webhook/1.0.
-
 ====================================================================
 4. IMPLEMENTATION CHECKLIST (do all of these)
 ====================================================================
 [ ] One HTTP client module: signs requests, injects headers, parses the envelope, maps
     `code` to typed errors, reads X-RateLimit-Remaining, retries ONLY idempotent GETs
     (max 2, exponential backoff) and order POSTs that carry idempotency_key.
-[ ] Tables: packages (synced), orders, esims, balance_snapshots (optional), webhook_events.
+[ ] Tables: packages (synced), orders, esims, balance_snapshots (optional).
 [ ] Scheduled jobs: package sync (every 6–12 h, paced 1 req/s, never deletes), low-balance
     alert (hourly), optional nightly reconciliation of ACTIVE eSIMs.
 [ ] Customer flows call eSIMfly only for: order, top-up packages, top-up order, one-eSIM usage.
-[ ] Webhook endpoint with signature verification + dedupe + 2xx within 10 s.
-[ ] Pending-order handling (webhook first, bounded polling fallback).
-[ ] Never log the secret key or webhook secret; never send them to a browser/mobile app.
+[ ] Pending-order handling (bounded polling, then manual follow-up).
+[ ] Never log the secret key; never send it to a browser/mobile app.
 [ ] Read `currency` from responses; format IQD as integers.

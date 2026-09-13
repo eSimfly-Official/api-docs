@@ -24,7 +24,7 @@ curl --location 'https://esimfly.net/api/v1/business/balance' \
 
 ## Building with an AI assistant?
 
-Copy the [complete integration prompt](/docs/llm-integration) into ChatGPT, Claude, Cursor or Copilot. It contains every endpoint plus the recommended architecture — sync the package catalogue into your own database, use idempotency keys on orders, complete pending eSIMs via webhooks — so the generated code stays fast and well inside the rate limits. Every endpoint page also has its own prompt.
+Copy the [complete integration prompt](/docs/llm-integration) into ChatGPT, Claude, Cursor or Copilot. It contains every endpoint plus the recommended architecture — sync the package catalogue into your own database, use idempotency keys on orders — so the generated code stays fast and well inside the rate limits. Every endpoint page also has its own prompt.
 
 ## Version - V1
 

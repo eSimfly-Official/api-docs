@@ -18,9 +18,8 @@ stays well inside the rate limits.
 eSIMfly is the source of truth for **provisioning**; your database is the source of truth for what
 you **show**. Sync the package catalogue into your own database on a schedule and serve your
 storefront from it — never call `/esims/packages` per customer request. Place orders with an
-`idempotency_key`, persist the whole response, and render QR codes from `lpaString`. Complete
-pending (async) eSIMs from the webhook, with a bounded polling fallback. Look up usage for one eSIM
-on demand, cached. Diagnostics (live status, network events, usage reports) are support tools only.
+`idempotency_key`, persist the whole response, and render QR codes from `lpaString`. The rare
+pending order is completed with bounded polling. Look up usage for one eSIM on demand, cached. Diagnostics (live status, network events, usage reports) are support tools only.
 
 | Endpoint | How it should be used | Typical requests |
 |---|---|---|
@@ -35,7 +34,6 @@ on demand, cached. Diagnostics (live status, network events, usage reports) are 
 | `GET /orders` | Daily incremental finance reconciliation (`from_date`) | ~5 / day |
 | `POST /esims/status`, `/network-events`, `/usage-report` | Support console buttons, throttled | on demand |
 | `POST /esims/suspend`, `/cancel`, `/send-sms` | Explicit operator / customer actions | on demand |
-| `PUT /webhooks` | Once. Verify `X-Webhook-Signature`, dedupe on `X-Webhook-Id`, answer 2xx fast | once |
 
 Default rate limits are **60 requests/minute, 1,000/hour, 10,000/day** per API key. The design
 above keeps a typical reseller at a few hundred requests per day.
@@ -61,7 +59,7 @@ not need to read the rest of these docs.
    ```
 
 3. **Ask for one deliverable at a time** — the shared signed client first, then the catalogue
-   sync, then ordering, then the webhook receiver — and run the checklist at the end of the prompt.
+   sync, then ordering, then top-ups — and run the checklist at the end of the prompt.
 4. **Give agents the raw URLs.** Coding agents that can browse can read
    [`/llms.txt`](/llms.txt) (an index of all prompts) or any `/llm/<endpoint>.txt` directly.
 
@@ -87,7 +85,6 @@ paste all fifteen to build a full integration — use the complete prompt above 
 | Cancel eSIM | [page](/docs/api/cancel-esim) · [raw](/llm/cancel-esim.txt) |
 | Send SMS | [page](/docs/api/send-sms) · [raw](/llm/send-sms.txt) |
 | Orders | [page](/docs/api/orders) · [raw](/llm/orders.txt) |
-| Webhooks | [page](/docs/api/webhooks) · [raw](/llm/webhooks.txt) |
 
 ## Why we ask you to sync the catalogue
 

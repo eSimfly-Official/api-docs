@@ -39,7 +39,6 @@ Simply provide the package code - everything else is handled automatically.
 |-------|------|----------|-------------|
 | packageCode | String | **Yes** | Package code from the packages endpoint |
 | quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
-| callbackUrl | String | No | Webhook URL for this order - we POST eSIM details here when provisioning completes. See [Webhooks](/docs/api/webhooks) |
 | recurring | Boolean | No | For O2 and Vodafone packages that support auto-renewal. Set to `true` to enable subscription. Default: `false` (one-time). Check `is_recurring` in the packages list to see which packages support this. |
 | idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
@@ -167,25 +166,16 @@ The API automatically handles:
 }
 ```
 
-### Pending Response - KDDI Japan eSIM (200 OK)
+### Pending Response (200 OK)
 
-Some providers (like KDDI for Japan) require 1-5 minutes to provision eSIM profiles. You will receive a pending response.
+A small number of packages are provisioned asynchronously and take a few minutes. For those you receive a pending response with an empty `esims` array:
 
-**KDDI Order Request:**
-```json
-{
-  "packageCode": "RB85_4D",
-  "callbackUrl": "https://your-server.com/webhook"
-}
-```
-
-**KDDI Pending Response:**
 ```json
 {
   "success": true,
-  "message": "Order created successfully. KDDI eSIM is being provisioned.",
+  "message": "Order created successfully. eSIM is being provisioned.",
   "orderReference": "order_1776079539762_hvkrk",
-  "packageName": "Japan 12 GB 4 Days",
+  "packageName": "Example 12 GB 4 Days",
   "status": "pending_details",
   "amount": 5.85,
   "isPending": true,
@@ -193,11 +183,7 @@ Some providers (like KDDI for Japan) require 1-5 minutes to provision eSIM profi
 }
 ```
 
-**How to get the eSIM when it is ready:**
-
-1. **Webhook (recommended):** Configure a webhook URL on your API key or pass `callbackUrl` in the order request. We will POST the eSIM details to your URL automatically. See [Webhooks](/docs/api/webhooks).
-
-2. **Polling:** Call the order status endpoint every 15-30 seconds:
+**How to get the eSIM when it is ready:** call the order status endpoint every 15–30 seconds (for at most about 10 minutes, then hand the order to support — do not re-order):
 
 **Poll Response - Still Pending:**
 ```json
@@ -217,7 +203,7 @@ Some providers (like KDDI for Japan) require 1-5 minutes to provision eSIM profi
 {
   "success": true,
   "order": {
-    "packageName": "Japan 12 GB 4 Days",
+    "packageName": "Example 12 GB 4 Days",
     "status": "completed",
     "esim": {
       "iccid": "8981100000012345678",

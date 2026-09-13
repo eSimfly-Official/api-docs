@@ -116,11 +116,6 @@ const sidebars = {
           id: 'api/usage-report',
           label: 'Usage Report',
         },
-        {
-          type: 'doc',
-          id: 'api/webhooks',
-          label: 'Webhooks',
-        },
       ],
     },
     {

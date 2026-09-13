@@ -1,7 +1,7 @@
 # eSIMfly Business API
 
 > HTTPS API for resellers to sell eSIM data packages worldwide: catalogue, ordering, top-ups,
-> usage, diagnostics and webhooks. HMAC-SHA256 authentication. Base URL https://esimfly.net/api/v1/business
+> usage and diagnostics. HMAC-SHA256 authentication. Base URL https://esimfly.net/api/v1/business
 
 ## Start here (AI-ready prompts)
 
@@ -24,7 +24,6 @@
 - [Cancel eSIM](https://docs.esimfly.net/llm/cancel-esim.txt)
 - [Send SMS](https://docs.esimfly.net/llm/send-sms.txt)
 - [Orders](https://docs.esimfly.net/llm/orders.txt)
-- [Webhooks](https://docs.esimfly.net/llm/webhooks.txt)
 
 ## Human documentation
 
