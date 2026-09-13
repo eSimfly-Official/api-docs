@@ -145,6 +145,10 @@ const config = {
                 label: 'Node.js SDK (npm)',
                 href: 'https://www.npmjs.com/package/@esimfly/sdk',
               },
+              {
+                label: 'MCP Server (npm)',
+                href: 'https://www.npmjs.com/package/@esimfly/mcp',
+              },
             ],
           },
           {

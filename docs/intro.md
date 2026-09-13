@@ -47,6 +47,12 @@ Zero dependencies, typed responses, automatic HMAC signing, idempotent retries, 
 and webhook verification. Source and full README: [github.com/eSimfly-Official/esimfly-sdk-nodejs](https://github.com/eSimfly-Official/esimfly-sdk-nodejs).
 PHP and Python SDKs are planned; until then use the [code examples](/docs/examples).
 
+## Using an AI agent?
+
+Connect Claude, Cursor or another MCP client to the API with the official
+[MCP server](/docs/mcp-server): `npx -y @esimfly/mcp`. Read-only by default; orders and top-ups
+need an explicit confirmation step.
+
 ## Building with an AI assistant?
 
 Copy the [complete integration prompt](/docs/llm-integration) into ChatGPT, Claude, Cursor or Copilot. It contains every endpoint plus the recommended architecture — sync the package catalogue into your own database, use idempotency keys on orders — so the generated code stays fast and well inside the rate limits. Every endpoint page also has its own prompt.

@@ -38,6 +38,11 @@ const sidebars = {
     },
     {
       type: 'doc',
+      id: 'mcp-server',
+      label: 'MCP Server (AI agents)',
+    },
+    {
+      type: 'doc',
       id: 'enterprise-accounts',
       label: 'Enterprise Accounts',
     },

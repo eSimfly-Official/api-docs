@@ -61,9 +61,9 @@ const FeatureList = [
     icon: '🤖',
     description: (
       <>
-        Every endpoint page has a copy-paste prompt, plus one complete prompt for the whole API
-        that already encodes the recommended architecture. Paste into ChatGPT, Claude, Cursor or
-        Copilot and start building. <Link to="/docs/llm-integration">AI integration →</Link>
+        Copy-paste prompts for every endpoint, one complete prompt for the whole API, and an
+        official <Link to="/docs/mcp-server">MCP server</Link> so Claude, Cursor or ChatGPT can
+        call the API directly. <Link to="/docs/llm-integration">AI integration →</Link>
       </>
     ),
   },

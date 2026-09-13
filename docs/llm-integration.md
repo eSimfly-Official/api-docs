@@ -40,6 +40,12 @@ low-data events so you rarely need to poll usage at all. Diagnostics (live statu
 Rate limits are per API key and shown in the dashboard (typically **100 requests/minute, 1,000/hour, 10,000/day**). The design
 above keeps a typical reseller at a few hundred requests per day.
 
+## Let the assistant call the API itself: MCP server
+
+Prompts make an assistant *write* your integration. The official [MCP server](/docs/mcp-server)
+(`npx -y @esimfly/mcp`) lets Claude, Cursor or ChatGPT *call* the API live — search plans, check
+usage, diagnose an eSIM — read-only by default, with two-step confirmation for orders.
+
 ## Node.js? Use the SDK
 
 If the stack is Node.js / TypeScript, tell the assistant to use the official SDK

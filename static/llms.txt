@@ -26,8 +26,9 @@
 - [Orders](https://docs.esimfly.net/llm/orders.txt)
 - [Webhooks](https://docs.esimfly.net/llm/webhooks.txt)
 
-## SDKs
+## SDKs and agents
 
+- [MCP server — @esimfly/mcp (Claude, Cursor, ChatGPT agents)](https://docs.esimfly.net/docs/mcp-server) · [npm](https://www.npmjs.com/package/@esimfly/mcp) · [source](https://github.com/eSimfly-Official/esimfly-mcp)
 - [Node.js / TypeScript SDK — @esimfly/sdk on npm](https://www.npmjs.com/package/@esimfly/sdk) · [source](https://github.com/eSimfly-Official/esimfly-sdk-nodejs)
 
 ## Human documentation
