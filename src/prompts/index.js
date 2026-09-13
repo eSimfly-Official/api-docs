@@ -17,12 +17,13 @@ import suspendEsim from '@site/static/llm/suspend-esim.txt';
 import cancelEsim from '@site/static/llm/cancel-esim.txt';
 import sendSms from '@site/static/llm/send-sms.txt';
 import orders from '@site/static/llm/orders.txt';
+import webhooks from '@site/static/llm/webhooks.txt';
 
 const prompts = {
   'esimfly-api-full-prompt': {
     text: full,
     title: 'Complete integration prompt (all endpoints)',
-    pattern: 'Catalogue synced to your DB · orders with idempotency keys · bounded polling for the rare pending order · on-demand usage lookups',
+    pattern: 'Catalogue synced to your DB · orders with idempotency keys · webhooks for install / status / low-data events · on-demand usage lookups',
   },
   balance: {
     text: balance,
@@ -93,6 +94,11 @@ const prompts = {
     text: orders,
     title: 'Orders',
     pattern: 'Incremental daily reconciliation with from_date and limit=100; never poll to confirm an order',
+  },
+  webhooks: {
+    text: webhooks,
+    title: 'Webhooks',
+    pattern: 'Subscribe to esim.installed / esim.status.changed / esim.usage.threshold, verify X-Webhook-Signature on the raw body, dedupe on X-Webhook-Id, respond 2xx fast, apply events to your own eSIM record',
   },
 };
 

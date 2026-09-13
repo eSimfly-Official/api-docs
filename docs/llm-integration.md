@@ -19,7 +19,8 @@ eSIMfly is the source of truth for **provisioning**; your database is the source
 you **show**. Sync the package catalogue into your own database on a schedule and serve your
 storefront from it — never call `/esims/packages` per customer request. Place orders with an
 `idempotency_key`, persist the whole response, and render QR codes from `lpaString`. The rare
-pending order is completed with bounded polling. Look up usage for one eSIM on demand, cached. Diagnostics (live status, network events, usage reports) are support tools only.
+pending order is completed with bounded polling. Subscribe to webhooks for install, status and
+low-data events so you rarely need to poll usage at all. Diagnostics (live status, network events, usage reports) are support tools only.
 
 | Endpoint | How it should be used | Typical requests |
 |---|---|---|
@@ -34,6 +35,7 @@ pending order is completed with bounded polling. Look up usage for one eSIM on d
 | `GET /orders` | Daily incremental finance reconciliation (`from_date`) | ~5 / day |
 | `POST /esims/status`, `/network-events`, `/usage-report` | Support console buttons, throttled | on demand |
 | `POST /esims/suspend`, `/cancel`, `/send-sms` | Explicit operator / customer actions | on demand |
+| `PUT /webhooks` | Once. Subscribe to `esim.installed`, `esim.status.changed`, `esim.usage.threshold`; verify signature, dedupe, answer 2xx fast | once |
 
 Rate limits are per API key and shown in the dashboard (typically **100 requests/minute, 1,000/hour, 10,000/day**). The design
 above keeps a typical reseller at a few hundred requests per day.
@@ -85,6 +87,7 @@ paste all fifteen to build a full integration — use the complete prompt above 
 | Cancel eSIM | [page](/docs/api/cancel-esim) · [raw](/llm/cancel-esim.txt) |
 | Send SMS | [page](/docs/api/send-sms) · [raw](/llm/send-sms.txt) |
 | Orders | [page](/docs/api/orders) · [raw](/llm/orders.txt) |
+| Webhooks | [page](/docs/api/webhooks) · [raw](/llm/webhooks.txt) |
 
 ## Why we ask you to sync the catalogue
 

@@ -101,8 +101,10 @@ B) ORDERS — POST /esims/order is the only way to buy.
    - Check balance BEFORE the order only if you display it; the order itself returns
      INSUFFICIENT_BALANCE with currentBalance/requiredBalance/needToLoad if funds are short.
 
-C) eSIM STATE — keep your own `esims` table populated from order responses.
+C) eSIM STATE — keep your own `esims` table populated from order responses and WEBHOOKS.
    - Never list GET /esims to find eSIMs you sold; you already have them.
+   - Subscribe to webhooks (section G) so installs, status changes and low-data thresholds
+     arrive in real time; then usage lookups are only needed when a customer opens the eSIM.
    - Customer opens "my eSIM": GET /esims/usage/query?iccid=… (one call, cache 5–15 min).
    - Support lookup by ICCID: GET /esims?search=<iccid>&limit=1.
    - Optional nightly reconciliation of ACTIVE eSIMs: GET /esims?status=ACTIVE&limit=100,
@@ -133,7 +135,21 @@ F) DIAGNOSTICS — support tools only, never in crons, never on page load.
    - POST /esims/cancel  (only before activation; refunds to balance; idempotent-safe)
    - POST /esims/send-sms { message <=500 chars }
 
-G) ORDER HISTORY / RECONCILIATION — GET /orders
+G) WEBHOOKS — configure once, verify always.
+   - PUT /webhooks { "webhook_url": "https://…", "events": ["esim.installed", "esim.status.changed", "esim.usage.threshold"] }
+     Save the returned `secret` (whsec_…) — shown once. GET /webhooks lists config + last deliveries.
+   - Events: esim.installed (profile enabled on a phone, seconds), esim.profile.updated (every SM-DP+
+     state change — chatty, usually skip), esim.usage.threshold (500/200/100/50 MB remaining, seconds,
+     not unlimited plans), esim.status.changed (NEW→ACTIVE→DEPLETED/EXPIRED, ≤30 min, all providers),
+     esim.provisioned (async packages). Real-time events cover eSIMfly-network eSIMs (packages that
+     expose `countries`/`networks`).
+   - Verify: expected = "sha256=" + hex(HMAC-SHA256(secret, rawBody)); constant-time compare with
+     X-Webhook-Signature. Reject on mismatch (401). Dedupe on X-Webhook-Id. Respond 2xx within 10 s;
+     process asynchronously. Retries: 10 s, 30 s, 2 min, 10 min, then marked failed.
+   - Payload: { event, timestamp, data: { iccid, esim_id, package_code, order_reference, source, …event fields } }
+     Apply each event to your own esims row (installed_at, status/expiry, used/remaining GB).
+
+H) ORDER HISTORY / RECONCILIATION — GET /orders
    - For finance reconciliation, run daily with from_date = last run, limit=100, paginated.
    - Never poll /orders to learn whether an order succeeded; the order response tells you.
 
@@ -243,7 +259,17 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 3.14 POST /esims/send-sms   Body: { iccid|esimId, message (<=500 chars) }
   -> { success, message }   Errors: MISSING_MESSAGE | MESSAGE_TOO_LONG | SMS_NOT_SUPPORTED | SMS_FAILED.
 
-3.15 GET /orders?page&limit<=100&status=all|pending|completed|failed|cancelled&from_date&to_date&search&sort_by=created_at|amount|status&sort_order=asc|desc
+3.15 Webhooks
+  PUT /webhooks { webhook_url, events[] } -> { success, webhook: { url, secret, events } }
+  GET /webhooks -> { success, webhook: { url, events, api_key_name }, available_events[], recent_deliveries[] }
+  Delivery headers: X-Webhook-Event, X-Webhook-Signature ("sha256=<hex>"), X-Webhook-Timestamp, X-Webhook-Id.
+  Event fields: esim.installed { eid, imsi, installed_at } · esim.profile.updated { profile_status, profile,
+  previous_profile_status, eid, imsi, changed_at } · esim.status.changed { old_status, new_status, changed_at,
+  expiry_date } · esim.usage.threshold { threshold_remaining_mb, used_percent, used_gb, total_gb, remaining_gb,
+  package_id, reported_at } · esim.provisioned { iccid, qr_code_url, lpa_string, direct_apple_install_url,
+  direct_android_install_url, package_name }
+
+3.16 GET /orders?page&limit<=100&status=all|pending|completed|failed|cancelled&from_date&to_date&search&sort_by=created_at|amount|status&sort_order=asc|desc
   -> { success, data: { orders: [{ id, order_reference, package_name, package_code, amount,
        currency, status, flag_url, created_at, esim: { iccid, imsi, msisdn, sim_status,
        esim_status, profile_status, unlimited, total_volume, total_duration, expired_time } | null }],
@@ -255,10 +281,11 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 [ ] One HTTP client module: signs requests, injects headers, parses the envelope, maps
     `code` to typed errors, reads X-RateLimit-Remaining, retries ONLY idempotent GETs
     (max 2, exponential backoff) and order POSTs that carry idempotency_key.
-[ ] Tables: packages (synced), orders, esims, balance_snapshots (optional).
+[ ] Tables: packages (synced), orders, esims, webhook_deliveries (dedupe on X-Webhook-Id).
 [ ] Scheduled jobs: package sync (every 6–12 h, paced 1 req/s, never deletes), low-balance
     alert (hourly), optional nightly reconciliation of ACTIVE eSIMs.
 [ ] Customer flows call eSIMfly only for: order, top-up packages, top-up order, one-eSIM usage.
+[ ] Webhook receiver: raw-body signature check + dedupe + 2xx within 10 s + async apply.
 [ ] Pending-order handling (bounded polling, then manual follow-up).
-[ ] Never log the secret key; never send it to a browser/mobile app.
+[ ] Never log the secret key or webhook secret; never send them to a browser/mobile app.
 [ ] Read `currency` from responses; format IQD as integers.
