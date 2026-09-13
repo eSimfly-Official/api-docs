@@ -11,7 +11,7 @@ COMMON RULES (apply to every eSIMfly request)
   rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
 - Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
 - Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
-- Rate limits per API key (defaults): 60/minute, 1,000/hour, 10,000/day -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
+- Rate limits are per API key, shown in the business dashboard (typically 100/minute, 1,000/hour, 10,000/day) -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
 - Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
 - Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
 - Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
@@ -33,7 +33,7 @@ INTEGRATION PATTERN
 3. Record every send on our side (iccid, template, timestamp, result) — eSIMfly also logs it on the order.
 4. If a send returns SMS_NOT_SUPPORTED, flag the eSIM `sms_supported = false` locally and stop offering SMS for it.
 5. On SMS_FAILED or a timeout, retry at most once after 30 s with a new RT-RequestID; then give up and log.
-6. Rate: keep well below 60 requests/minute if a batch of notifications fires at once — queue them.
+6. Rate: keep well below your per-minute limit (typically 100) if a batch of notifications fires at once — queue them.
 
 DELIVERABLE: sendSms(iccid, message) in the shared client, a queued notification sender with per-eSIM
 capability flag, and the local send log.

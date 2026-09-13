@@ -271,7 +271,7 @@ E8C3D2F91A5B4C7D8E9F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D
 
 All API endpoints are rate-limited to prevent abuse:
 
-- **Rate limit**: 60 requests per minute, 1000 per hour, 10,000 per day (defaults per API key)
+- **Rate limit**: per API key, shown in the dashboard (typically 100 requests per minute, 1000 per hour, 10,000 per day)
 
 Rate limit information is included in response headers:
 - `X-RateLimit-Limit`: Maximum requests allowed

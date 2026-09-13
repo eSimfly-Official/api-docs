@@ -505,7 +505,7 @@ Response includes pagination metadata:
 
 ## Rate Limits
 
-- Default: 60 requests per minute, 1000 per hour, 10,000 per day
+- Per API key, shown in your dashboard (typically 100 requests per minute, 1000 per hour, 10,000 per day)
 - Pace bulk jobs (catalogue sync, reconciliation) at one request per second
 
 Rate limit information is included in response headers:

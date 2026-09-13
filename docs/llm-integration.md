@@ -35,7 +35,7 @@ pending order is completed with bounded polling. Look up usage for one eSIM on d
 | `POST /esims/status`, `/network-events`, `/usage-report` | Support console buttons, throttled | on demand |
 | `POST /esims/suspend`, `/cancel`, `/send-sms` | Explicit operator / customer actions | on demand |
 
-Default rate limits are **60 requests/minute, 1,000/hour, 10,000/day** per API key. The design
+Rate limits are per API key and shown in the dashboard (typically **100 requests/minute, 1,000/hour, 10,000/day**). The design
 above keeps a typical reseller at a few hundred requests per day.
 
 ## Complete prompt (all endpoints)

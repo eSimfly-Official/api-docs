@@ -65,7 +65,7 @@ All API requests require HMAC-SHA256 signature authentication using:
 
 ## Rate Limit
 
-Default limits per API key are **60 requests per minute, 1,000 per hour and 10,000 per day**. Bulk jobs (such as a catalogue sync) should be paced at one request per second. Rate limit information is included in response headers:
+Limits are set per API key and shown in your Business Dashboard (typically **100 requests per minute, 1,000 per hour and 10,000 per day**). Bulk jobs (such as a catalogue sync) should be paced at one request per second. Rate limit information is included in response headers:
 - `X-RateLimit-Limit`: Maximum requests allowed
 - `X-RateLimit-Remaining`: Requests remaining
 - `X-RateLimit-Reset`: Time when limit resets
