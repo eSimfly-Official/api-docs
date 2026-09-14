@@ -15,7 +15,35 @@ Typical uses: a support agent asking *"why does ICCID 8948… have no data?"*, a
 the real catalogue from inside the IDE while the assistant writes the integration, or an ops
 assistant that keeps an eye on balance and low-data eSIMs.
 
-## Install
+## Two ways to connect
+
+| | Hosted server (recommended) | Local server (`npx`) |
+|---|---|---|
+| URL / command | `https://mcp.esimfly.net/mcp` | `npx -y @esimfly/mcp` |
+| Login | Sign in with your eSIMfly business account (OAuth) — no keys to paste | API access code + secret in the client config |
+| Works in | Claude.ai, Claude Desktop & mobile, ChatGPT, Claude Code, Cursor, VS Code, Windsurf | Claude Desktop, Claude Code, Cursor, VS Code, Windsurf |
+| Write tools | Chosen on the consent screen (off by default) | `ESIMFLY_MCP_ALLOW_WRITES=true` |
+| Revoke | Business Dashboard → Settings → API Keys → “MCP (AI agents)” | Delete the config entry |
+
+Both expose exactly the same tools and prompts.
+
+## Hosted server
+
+Add `https://mcp.esimfly.net/mcp` as a remote MCP server; the client opens an eSIMfly login page,
+you approve access (and optionally allow orders / top-ups), and you're connected. Access runs on a
+dedicated **“MCP (AI agents)”** API key created on your account at first consent, so it appears in
+your dashboard with your normal rate limits and can be revoked there at any time.
+
+- **Claude.ai / Claude Desktop:** Settings → Connectors → *Add custom connector* → name `eSIMfly`, URL `https://mcp.esimfly.net/mcp` → Add → *Connect* and sign in.
+- **ChatGPT:** Settings → Connectors → *Create* → name `eSIMfly`, MCP server URL `https://mcp.esimfly.net/mcp`, authentication *OAuth* → Create, then sign in when prompted.
+- **Claude Code:** `claude mcp add --transport http esimfly https://mcp.esimfly.net/mcp` then `/mcp` → *Authenticate*.
+- **Cursor / VS Code / Windsurf:** `{ "mcpServers": { "esimfly": { "url": "https://mcp.esimfly.net/mcp" } } }` — the client starts the login on first use.
+
+The server implements the MCP authorization spec (OAuth 2.1 with PKCE, dynamic client registration,
+discovery at `https://mcp.esimfly.net/.well-known/oauth-protected-resource/mcp`), so any compliant client works without
+special configuration. Tokens last 24 hours and refresh automatically for 90 days.
+
+## Local server
 
 The server runs locally over stdio; your API key stays on your machine.
 
@@ -69,7 +97,7 @@ current) and `diagnose_esim` (a guided connectivity diagnosis).
 
 ## Safety model
 
-- **Read-only by default.** Write tools are not even registered without `ESIMFLY_MCP_ALLOW_WRITES=true`.
+- **Read-only by default.** Write tools are not even registered unless you allow them — on the consent screen for the hosted server, or with `ESIMFLY_MCP_ALLOW_WRITES=true` locally.
 - **Two-step writes.** A call without `confirm: true` returns a preview — package, cost, balance — and
   makes no mutable API call. `create_order` also requires the idempotency key from its own preview, so an
   agent cannot place the same order twice.
