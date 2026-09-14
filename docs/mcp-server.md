@@ -43,6 +43,10 @@ The server implements the MCP authorization spec (OAuth 2.1 with PKCE, dynamic c
 discovery at `https://mcp.esimfly.net/.well-known/oauth-protected-resource/mcp`), so any compliant client works without
 special configuration. Tokens last 24 hours and refresh automatically for 90 days.
 
+The hosted server is also listed on [Smithery](https://smithery.ai/servers/akam19901205/esimfly), in the
+[official MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.eSimfly-Official/esimfly-mcp`,
+and on [Glama](https://glama.ai/mcp/servers/eSimfly-Official/esimfly-mcp) — install from any of them, or use the URL directly.
+
 ## Local server
 
 The server runs locally over stdio; your API key stays on your machine.
