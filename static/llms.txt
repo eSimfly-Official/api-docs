@@ -28,7 +28,8 @@
 
 ## SDKs and agents
 
-- [MCP server — @esimfly/mcp (Claude, Cursor, ChatGPT agents)](https://docs.esimfly.net/docs/mcp-server) · [npm](https://www.npmjs.com/package/@esimfly/mcp) · [source](https://github.com/eSimfly-Official/esimfly-mcp)
+- [Hosted MCP server: https://mcp.esimfly.net/mcp — add as a remote MCP server in Claude.ai, ChatGPT, Claude Code, Cursor; sign in with your business account](https://docs.esimfly.net/docs/mcp-server)
+- [Local MCP server — @esimfly/mcp (npx)](https://docs.esimfly.net/docs/mcp-server) · [npm](https://www.npmjs.com/package/@esimfly/mcp) · [source](https://github.com/eSimfly-Official/esimfly-mcp)
 - [Node.js / TypeScript SDK — @esimfly/sdk on npm](https://www.npmjs.com/package/@esimfly/sdk) · [source](https://github.com/eSimfly-Official/esimfly-sdk-nodejs)
 
 ## Human documentation

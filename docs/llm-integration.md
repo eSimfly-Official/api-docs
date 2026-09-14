@@ -43,8 +43,9 @@ above keeps a typical reseller at a few hundred requests per day.
 ## Let the assistant call the API itself: MCP server
 
 Prompts make an assistant *write* your integration. The official [MCP server](/docs/mcp-server)
-(`npx -y @esimfly/mcp`) lets Claude, Cursor or ChatGPT *call* the API live — search plans, check
-usage, diagnose an eSIM — read-only by default, with two-step confirmation for orders.
+lets Claude, ChatGPT or Cursor *call* the API live — search plans, check usage, diagnose an eSIM —
+read-only by default, with two-step confirmation for orders. Hosted at `https://mcp.esimfly.net/mcp`
+(sign in with your business account) or run locally with `npx -y @esimfly/mcp`.
 
 ## Node.js? Use the SDK
 

@@ -49,9 +49,10 @@ PHP and Python SDKs are planned; until then use the [code examples](/docs/exampl
 
 ## Using an AI agent?
 
-Connect Claude, Cursor or another MCP client to the API with the official
-[MCP server](/docs/mcp-server): `npx -y @esimfly/mcp`. Read-only by default; orders and top-ups
-need an explicit confirmation step.
+Connect Claude.ai, ChatGPT, Claude Code, Cursor or any MCP client to the API with the official
+[MCP server](/docs/mcp-server): add `https://mcp.esimfly.net/mcp` and sign in with your business
+account (or run it locally with `npx -y @esimfly/mcp`). Read-only by default; orders and top-ups need
+an explicit confirmation step.
 
 ## Building with an AI assistant?
 

@@ -62,8 +62,8 @@ const FeatureList = [
     description: (
       <>
         Copy-paste prompts for every endpoint, one complete prompt for the whole API, and an
-        official <Link to="/docs/mcp-server">MCP server</Link> so Claude, Cursor or ChatGPT can
-        call the API directly. <Link to="/docs/llm-integration">AI integration →</Link>
+        hosted <Link to="/docs/mcp-server">MCP server</Link> (<code>mcp.esimfly.net/mcp</code>) so
+        Claude, ChatGPT or Cursor can call the API directly. <Link to="/docs/llm-integration">AI integration →</Link>
       </>
     ),
   },
