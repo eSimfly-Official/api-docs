@@ -135,8 +135,9 @@ E) TOP-UPS — only on customer action.
      (packages are eSIM-specific; cache per ICCID for ~10 min).
    - POST /topup/order { "iccid", "packageCode" } — then update your esims row from
      esimData (newTotalVolumeGB, newRemainingVolumeGB, expiredTime) and balance from newBalance.
-   - Eligible statuses: ACTIVE, DEPLETED, USED_EXPIRED (and NEW for eSIMfly-provided eSIMs).
-     Otherwise ESIM_NOT_TOPPABLE.
+   - Eligible statuses: ACTIVE, IN_USE, DEPLETED, EXPIRED, USED_EXPIRED (and NEW for eSIMfly-provided
+     eSIMs); an expired eSIM tops up onto a fresh validity window. Cancelled/deleted/revoked/suspended
+     eSIMs -> ESIM_NOT_TOPPABLE.
    - No idempotency key on top-ups: on a timeout do NOT blindly retry — first call
      GET /esims/usage/query?iccid=… and compare total_mb with your stored value.
 

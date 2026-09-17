@@ -23,8 +23,10 @@ ENDPOINT
   Body: { "iccid": "8943108170002570328", "packageCode": "<package_code from /topup/packages>", "quantity": 1 }
   Do NOT send price/packageName — the API looks them up and charges the current cost.
 
-ELIGIBILITY: eSIM status ACTIVE, DEPLETED or USED_EXPIRED (case-insensitive); NEW is also allowed for
-eSIMfly-provided eSIMs. Anything else -> 400 ESIM_NOT_TOPPABLE.
+ELIGIBILITY: eSIM status ACTIVE, IN_USE, DEPLETED, EXPIRED or USED_EXPIRED (case-insensitive); NEW is
+also allowed for eSIMfly-provided eSIMs. An expired eSIM can be topped up: the top-up starts a new
+validity window on the same ICCID. Cancelled, deleted, revoked, suspended and never-used-then-expired
+(UNUSED_EXPIRED) eSIMs -> 400 ESIM_NOT_TOPPABLE.
 
 RESPONSE 200
   { success: true, message, orderReference: "topup_...", iccid, packageName, newBalance, currency,

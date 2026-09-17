@@ -31,8 +31,9 @@ RESPONSE 200
   package_code here is what you pass to POST /topup/order. cost = your buy price.
 
 ERRORS
-  400 MISSING_ICCID; 400 ESIM_NOT_TOPPABLE ("Current status: EXPIRED" — only ACTIVE, DEPLETED, USED_EXPIRED,
-  or NEW for eSIMfly-provided eSIMs can be topped up); 403 ESIM_ACCESS_DENIED (not your eSIM); 500.
+  400 MISSING_ICCID; 400 ESIM_NOT_TOPPABLE ("Current status: CANCELLED" — only ACTIVE, IN_USE, DEPLETED,
+  EXPIRED, USED_EXPIRED, or NEW for eSIMfly-provided eSIMs can be topped up); 403 ESIM_ACCESS_DENIED
+  (not your eSIM); 500.
 
 INTEGRATION PATTERN
 1. Call ONLY when a customer (or support agent) opens the top-up screen for a specific eSIM.
