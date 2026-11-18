@@ -12,7 +12,7 @@ COMMON RULES (apply to every eSIMfly request)
 - Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
 - Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
 - Rate limits are per API key, shown in the business dashboard (typically 100/minute, 1,000/hour, 10,000/day) -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
-- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Read `currency` from responses (USD | IQD | EUR | CHF | NOK = the account wallet currency; prices are quoted and charged in it). Never hard-code it. IQD amounts are integers.
 - Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
 - Node.js/TypeScript: use the official SDK instead of raw HTTP — `npm install @esimfly/sdk`
   (https://github.com/eSimfly-Official/esimfly-sdk-nodejs); it implements these rules. Other languages: implement the contract below.
@@ -20,8 +20,15 @@ COMMON RULES (apply to every eSIMfly request)
 
 ENDPOINT
   POST https://esimfly.net/api/v1/business/topup/order
-  Body: { "iccid": "8943108170002570328", "packageCode": "<package_code from /topup/packages>", "quantity": 1 }
+  Body: { "iccid": "8943108170002570328", "packageCode": "<package_code from /topup/packages>",
+          "idempotency_key": "<your own unique top-up id, max 200 chars>" }
   Do NOT send price/packageName — the API looks them up and charges the current cost.
+  A top-up always applies (and charges for) exactly ONE package; `quantity` is accepted but ignored.
+
+  GET https://esimfly.net/api/v1/business/topup/order?orderReference=<orderReference>
+  -> { success: true, order: { id, orderReference, packageName, packageCode, status, amount, finalPrice,
+       orderDate, paymentMethod, paymentStatus } }   (in progress: { orderReference, status, details, created_at })
+  Errors: 400 MISSING_ORDER_REFERENCE, 404 ORDER_NOT_FOUND.
 
 ELIGIBILITY: eSIM status ACTIVE, IN_USE, DEPLETED, EXPIRED or USED_EXPIRED (case-insensitive); NEW is
 also allowed for eSIMfly-provided eSIMs. An expired eSIM can be topped up: the top-up starts a new
@@ -32,21 +39,29 @@ RESPONSE 200
   { success: true, message, orderReference: "topup_...", iccid, packageName, newBalance, currency,
     status: "completed", amount, profit, processing_time_ms,
     esimData: { newTotalVolumeGB, newRemainingVolumeGB, expiredTime } }
+  Replay of an already-processed idempotency_key: { success: true, duplicate: true, orderReference, iccid,
+    packageName, status, amount, currency } — no newBalance / profit / esimData. Treat it as success.
 
 ERRORS
-  400 MISSING_FIELDS | ESIM_NOT_FOUND | ESIM_NOT_TOPPABLE | INSUFFICIENT_BALANCE | INVALID_TOPUP_PACKAGE | TOPUP_NOT_SUPPORTED
+  400 MISSING_FIELDS | ESIM_NOT_FOUND | ESIM_NOT_TOPPABLE | INSUFFICIENT_BALANCE | INVALID_TOPUP_PACKAGE |
+      TOPUP_NOT_SUPPORTED | PACKAGE_NOT_AVAILABLE | PRICE_MISMATCH (only if you send the legacy `price` field)
+  409 DUPLICATE_REQUEST — the same idempotency_key (or, without a key, the same package onto the same eSIM)
+      is still being processed. Nothing was charged. Retry later with the SAME key to get its result.
   500 "Failed to process topup order"
 
 INTEGRATION PATTERN
 1. Flow: customer opens top-up screen -> GET /topup/packages?iccid (cached 10 min) -> customer picks ->
-   POST /topup/order -> update our esims row (total/remaining GB, expiry) from esimData and our balance
-   mirror from newBalance -> store orderReference on a topups table for support.
-2. This endpoint has NO idempotency key. On a network timeout do NOT blindly retry: first call
-   GET /esims/usage/query?iccid=<iccid> and compare data.total_mb with the value you stored before the
-   top-up; if it increased, the top-up went through. Use a fresh RT-RequestID on any retry.
-3. Wrap the customer action in a local lock per ICCID so a double-click cannot send two top-ups.
+   create a local topups row (status pending) -> POST /topup/order with idempotency_key = that row's id ->
+   update our esims row (total/remaining GB, expiry) from esimData and our balance mirror from newBalance ->
+   store orderReference on the topups row for support.
+2. ALWAYS send idempotency_key. On a network timeout or 5xx, retry with the SAME idempotency_key (and a fresh
+   RT-RequestID): you get the original top-up back with duplicate: true, never a second charge.
+   Keys are per top-up namespace — reusing an ORDER key here does not replay the order.
+3. Without a key the API only blocks concurrent identical top-ups (409); a sequential retry WOULD apply and
+   charge again. Never retry without a key.
 4. Map INSUFFICIENT_BALANCE / ESIM_NOT_TOPPABLE / INVALID_TOPUP_PACKAGE to clear UI messages.
-5. Do not call /balance, /esims or /orders afterwards to "confirm" — the response is authoritative.
+5. Do not call /balance, /esims or /orders afterwards to "confirm" — the response is authoritative. For
+   support / reconciliation use GET /topup/order?orderReference=.
 
-DELIVERABLE: topupEsim(iccid, packageCode) in the shared client, per-ICCID lock, timeout verification
-via usage query, and the local record updates.
+DELIVERABLE: topupEsim(iccid, packageCode, idempotencyKey) in the shared client, retry-with-same-key on
+timeout / 5xx, getTopup(orderReference), and the local record updates.

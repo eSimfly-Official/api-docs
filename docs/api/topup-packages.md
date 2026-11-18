@@ -197,7 +197,7 @@ eSIM cannot be topped up due to status:
 {
   "success": false,
   "error": "eSIM cannot be topped up. Current status: EXPIRED",
-  "message": "Only ACTIVE, DEPLETED, or USED_EXPIRED eSIMs can be topped up (NEW is also allowed for esimfly eSIMs)",
+  "message": "Only ACTIVE, IN_USE, DEPLETED, EXPIRED or USED_EXPIRED eSIMs can be topped up (NEW is also allowed for esimfly eSIMs)",
   "code": "ESIM_NOT_TOPPABLE"
 }
 ```

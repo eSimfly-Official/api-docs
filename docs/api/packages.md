@@ -173,14 +173,16 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"PHAJHEAYP"`, `"1654977"`, or `"ent_1234567"` for an enterprise account's own package). Pass it back exactly as received |
 | name | String | Package display name |
 | region | String | Region or country name |
-| type | String | Package type: `"local"`, `"regional"`, `"global"`, or `"enterprise"` for an enterprise self-service account's own packages |
+| type | String | Package type: `"local"`, `"localesim"` (single-country plan on a local carrier profile), `"regional"`, `"global"`, or `"enterprise"` for an enterprise self-service account's own packages |
 | data_amount_gb | Number | Data allowance in GB |
 | validity_days | Integer | Validity period in days |
-| cost | Number | Your cost price in user's preferred currency |
-| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
+| cost | Number | Your buy price, in `currency` — the price an order charges |
+| currency | String | Your account (wallet) currency: `USD`, `IQD`, `EUR`, `CHF` or `NOK` (`EUR` for an [enterprise account](/docs/enterprise-accounts)) |
+| cost_usd | Number/null | The same buy price in USD before conversion (some providers only) |
+| flag_url | String/null | Flag image for the destination (some providers only) |
 | features | Object | Package features object |
-| features.voice_minutes | Integer | Voice minutes included (0 if none) |
-| features.sms_count | Integer | SMS messages included (0 if none) |
+| features.voice_minutes | Integer or `"unlimited"` | Voice minutes included (0 if none) |
+| features.sms_count | Integer or `"unlimited"` | SMS messages included (0 if none) |
 | features.is_rechargeable | Boolean | Whether package can be recharged |
 | is_unlimited | Boolean | Unlimited data flag |
 | has_voice | Boolean | Has voice minutes included |
@@ -189,9 +191,9 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | locationNetworkList | Array | Detailed network coverage by location |
 | networks | Array | Raw per-network coverage rows with MCC/MNC and continent detail (eSIMfly packages). See [Networks Structure](#networks-structure) |
 
-### Additional Fields (O2, Vodafone, Bouygues Telecom Packages)
+### Additional Fields (Phone-Number Line Packages)
 
-These fields are included for packages from O2, Vodafone, and Bouygues Telecom carriers:
+These fields are included for packages that come with a phone number (UK, France, Spain and other phone-number lines):
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -201,8 +203,10 @@ These fields are included for packages from O2, Vodafone, and Bouygues Telecom c
 | has_hotspot | Boolean | Hotspot/tethering support |
 | can_extend | Boolean | Can be extended after expiry |
 | is_recurring | Boolean | Supports auto-renewal subscription |
-| activation_policy | String | "immediate" or "first_use" |
+| activation_policy | String | `"immediate"`, `"first_use"` or `"on_first_connection"` |
 | data_breakdown | Object/null | UK vs roaming data split (`uk_data_gb`, `roaming_data_gb`) |
+| roaming | Object/null | `{ data_gb, zone }`. On these lines `data_amount_gb` is the **home-country** allowance; `roaming` is the allowance usable while roaming in `zone` (e.g. `"EU"`, `"EU27 + UK"`) |
+| voice_description | String/null | The voice allowance in the provider's own words, e.g. `"Unlimited Spain + 1'000 min International"` |
 | voice_details | Object/null | Call and text details (see below) |
 
 ### Voice Details Structure
@@ -458,8 +462,8 @@ Not a business account:
 
 ## Notes
 
-- **Multi-Currency Pricing**: Prices are shown in your account currency (`USD`, `IQD`, or `EUR` for enterprise accounts)
-- **Currency Conversion**: IQD prices are converted using real-time exchange rates
+- **Multi-Currency Pricing**: Prices are shown in your account (wallet) currency — `USD`, `IQD`, `EUR`, `CHF` or `NOK` — and orders and top-ups charge exactly that amount
+- **Currency Conversion**: IQD prices use the stored IQD rate; EUR / CHF / NOK prices use the daily charge rate
 - **Currency Preference**: Set your preferred currency in the business dashboard settings
 - Packages are sorted: local plans first (sorted by GB, then unlimited by days), followed by regional, then global
 - Only packages with 1GB or more data are returned (small packages under 1GB are filtered out)

@@ -13,7 +13,7 @@ COMMON RULES (apply to every eSIMfly request)
 - Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
 - Responses: { success: true, ... } or { success: false, error|message, code }. Branch on `success` and `code`.
 - Rate limits are per API key, shown in the business dashboard (typically 100/minute, 1,000/hour, 10,000/day) -> RATE_LIMIT_EXCEEDED. Pace bulk work at <= 1 req/s.
-- Read `currency` from responses (USD | IQD | EUR for enterprise). Never hard-code it. IQD amounts are integers.
+- Read `currency` from responses (USD | IQD | EUR | CHF | NOK = the account wallet currency; prices are quoted and charged in it). Never hard-code it. IQD amounts are integers.
 - Package codes are opaque strings: store and send back verbatim, never parse or prefix them.
 - Node.js/TypeScript: use the official SDK instead of raw HTTP — `npm install @esimfly/sdk`
   (https://github.com/eSimfly-Official/esimfly-sdk-nodejs); it implements these rules. Other languages: implement the contract below.
@@ -24,7 +24,7 @@ ENDPOINT
   Body (JSON — sign the exact string you send):
   {
     "packageCode": "<package_code from OUR synced packages table>",   // required, opaque
-    "quantity": 1,                        // optional, 1..10 (max 10 per order)
+    "quantity": 1,                        // optional, WHOLE number 1..10 (else 400 INVALID_QUANTITY)
     "idempotency_key": "<our order id>",  // optional but ALWAYS send it (<= 200 chars, unique per purchase)
     "recurring": false                    // optional, only for O2/Vodafone packages with is_recurring = true
   }
@@ -34,9 +34,15 @@ RESPONSE 200 (completed)
   { success: true, message, orderReference, esimId, packageName, newBalance, currency,
     lpaString, qrCodeUrl ("data:image/png;base64,..."), directAppleInstallUrl, paymentMethod: "balance",
     status: "completed", amount, profit, final_price, processing_time_ms,
+    quantity (eSIMs provisioned AND charged), requestedQuantity, note?, directAndroidInstallUrl,
     esims: [{ iccid, lpaString, qrCodeUrl, directAppleInstallUrl, directAndroidInstallUrl?, status: "New",
               imsi, msisdn, sim_status, esim_status, profile_status, unlimited,
-              total_volume (bytes; 1073741824 = 1 GB), total_duration (days), expired_time, isPending: false }] }
+              total_volume (bytes; 1073741824 = 1 GB), total_duration (days), expired_time, isPending: false,
+              phoneNumber? (phone-number packages) }] }
+
+RESPONSE 200 (partial fill — some packages provision one eSIM at a time)
+  quantity < requestedQuantity; esims[] holds only the delivered eSIMs; amount/final_price/profit cover
+  `quantity` only; `note` explains. Deliver what you got and place a NEW order (new key) for the remainder.
 
 RESPONSE 200 (pending — rare; a few packages are provisioned asynchronously and take a few minutes)
   { success: true, orderReference, packageName, status: "pending_details", amount, isPending: true, esims: [] }
@@ -45,7 +51,8 @@ RESPONSE 200 (idempotent replay) — same idempotency_key as an already-complete
   { success: true, duplicate: true, orderReference, esimId, packageName, status: "completed", esims: [...] }
 
 ERRORS
-  400 MISSING_PACKAGE_CODE | INVALID_PACKAGE | PRICE_MISMATCH (only if you send price — don't)
+  400 MISSING_PACKAGE_CODE | INVALID_QUANTITY | INVALID_PACKAGE | PRICE_MISMATCH (only if you send price — don't)
+  400 PACKAGE_NOT_AVAILABLE (the package is not for sale on your account — drop it from your catalogue)
   400 INSUFFICIENT_BALANCE { currentBalance, requiredBalance, needToLoad }
   404 PACKAGE_NOT_FOUND (enterprise ent_ code not yours / inactive)
   409 DUPLICATE_REQUEST — a request with the same idempotency_key (or, without a key, the same

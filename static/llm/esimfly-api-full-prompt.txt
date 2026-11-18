@@ -13,8 +13,9 @@ If the project is Node.js/TypeScript, do NOT hand-write HTTP calls: `npm install
 (https://github.com/eSimfly-Official/esimfly-sdk-nodejs). `new ESIMfly({ accessCode, secretKey })`
 exposes balance.get(), packages.list()/listAll()/sync(), orders.create({ packageCode, quantity,
 idempotencyKey })/get()/waitForEsim()/list(), esims.list()/find()/usage()/status()/networkEvents()/
-usageReport()/suspend()/activate()/cancel()/sendSms(), topups.packages()/create(),
-webhooks.get()/set(), plus verifyWebhookSignature()/constructWebhookEvent(). It already implements
+usageReport()/suspend()/activate()/cancel()/sendSms(), topups.packages()/create({ iccid, packageCode,
+idempotencyKey })/get(), webhooks.get()/set(), plus verifyWebhookSignature()/constructWebhookEvent()
+(use 0.2.0+ for idempotent top-ups). It already implements
 sections 1, 2 and 4 below (signing, fresh request ids, typed ESIMflyError with `code`, idempotent
 retries, 1 req/s catalogue paging, pending-order polling). Keep it server-side.
 For other languages, implement the HTTP contract below directly.
@@ -95,6 +96,9 @@ A) CATALOGUE — sync GET /esims/packages into your own database. Do NOT proxy i
 
 B) ORDERS — POST /esims/order is the only way to buy.
    - Body: { "packageCode": "<from your DB>", "quantity": 1-10, "idempotency_key": "<your unique order id>" }
+   - quantity must be a whole number 1-10 (else 400 INVALID_QUANTITY). Partial fill: if fewer eSIMs could
+     be provisioned, the response has quantity < requestedQuantity plus a `note`, and you were charged for
+     `quantity` only — order the remainder separately.
    - Always send `idempotency_key` (your internal order/cart id, <=200 chars). A retry with
      the same key returns the ORIGINAL order (HTTP 200 with "duplicate": true) instead of
      charging again. Two concurrent requests with the same key => 409 DUPLICATE_REQUEST.
@@ -133,13 +137,17 @@ D) BALANCE — maintain a local mirror.
 E) TOP-UPS — only on customer action.
    - GET /topup/packages?iccid=<iccid>&limit=100 when the customer opens the top-up screen
      (packages are eSIM-specific; cache per ICCID for ~10 min).
-   - POST /topup/order { "iccid", "packageCode" } — then update your esims row from
-     esimData (newTotalVolumeGB, newRemainingVolumeGB, expiredTime) and balance from newBalance.
+   - POST /topup/order { "iccid", "packageCode", "idempotency_key": "<your unique top-up id>" } — then
+     update your esims row from esimData (newTotalVolumeGB, newRemainingVolumeGB, expiredTime) and
+     balance from newBalance. A top-up always applies exactly ONE package (quantity is ignored).
    - Eligible statuses: ACTIVE, IN_USE, DEPLETED, EXPIRED, USED_EXPIRED (and NEW for eSIMfly-provided
      eSIMs); an expired eSIM tops up onto a fresh validity window. Cancelled/deleted/revoked/suspended
      eSIMs -> ESIM_NOT_TOPPABLE.
-   - No idempotency key on top-ups: on a timeout do NOT blindly retry — first call
-     GET /esims/usage/query?iccid=… and compare total_mb with your stored value.
+   - ALWAYS send idempotency_key: a retry with the same key returns the ORIGINAL top-up
+     ("duplicate": true, no newBalance/esimData) instead of charging again. On a timeout / 5xx retry
+     with the SAME key and a new RT-RequestID. Concurrent identical top-ups => 409 DUPLICATE_REQUEST.
+     Top-up keys never replay an order with the same key. Never retry a top-up without a key.
+   - Status / support: GET /topup/order?orderReference=… returns the top-up (404 ORDER_NOT_FOUND if unknown).
 
 F) DIAGNOSTICS — support tools only, never in crons, never on page load.
    - POST /esims/status         (live status from the network, incl. last network + device)
@@ -187,25 +195,32 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
     countries?: ["US",...], locationNetworkList: [{ locationName, locationLogo,
     operatorList: [{ operatorName, networkType }] }], networks?: [{ network_id, network_name,
     network_type, country_code, country_name, country_iso2, continent, mcc_code, mnc_code }],
-    // O2 / Vodafone / Bouygues extras (optional):
+    // features.voice_minutes / sms_count: a number OR the string "unlimited"
+    // phone-number line extras (optional):
     phone_number, network_carrier, has_5g, has_hotspot, can_extend, is_recurring,
-    activation_policy: "immediate"|"first_use", data_breakdown, voice_details }
+    activation_policy: "immediate"|"first_use"|"on_first_connection", data_breakdown, voice_details,
+    roaming: { data_gb, zone } (data_amount_gb = home allowance, roaming = allowance in `zone`),
+    voice_description, flag_url, cost_usd (same buy price in USD, some providers) }
+  type may also be "localesim" (single-country plan on a local carrier profile).
   Notes: only >=1 GB packages are returned; sorted local -> regional -> global; enterprise
   self-service accounts get type "enterprise" and ent_ codes.
 
 3.3 POST /esims/order
-  Body: { packageCode: string, quantity?: 1..10, idempotency_key?: string,
+  Body: { packageCode: string, quantity?: whole number 1..10, idempotency_key?: string,
           recurring?: boolean (O2/Vodafone subscription packages only) }
   -> { success, message, orderReference, esimId, packageName, newBalance, currency,
-       lpaString, qrCodeUrl (data:image/png;base64,...), directAppleInstallUrl,
+       lpaString, qrCodeUrl (data:image/png;base64,...), directAppleInstallUrl, directAndroidInstallUrl,
        paymentMethod: "balance", status: "completed"|"pending_details", amount, profit,
-       final_price, processing_time_ms, isPending?, duplicate?,
+       final_price, quantity (eSIMs provisioned + charged), requestedQuantity, note?,
+       processing_time_ms, isPending?, duplicate?,
        esims: [{ iccid, lpaString, qrCodeUrl, directAppleInstallUrl, directAndroidInstallUrl?,
                  status: "New"|"PENDING", imsi, msisdn, sim_status, esim_status, profile_status,
-                 unlimited, total_volume (bytes), total_duration (days), expired_time, isPending }] }
-  Errors: 400 MISSING_PACKAGE_CODE | INVALID_PACKAGE | INSUFFICIENT_BALANCE
-          { currentBalance, requiredBalance, needToLoad } | 404 PACKAGE_NOT_FOUND (enterprise)
-          | 409 DUPLICATE_REQUEST (concurrent duplicate) | 500 ORDER_PROCESSING_ERROR.
+                 unlimited, total_volume (bytes), total_duration (days), expired_time, isPending,
+                 phoneNumber? (phone-number packages) }] }
+  Errors: 400 MISSING_PACKAGE_CODE | INVALID_QUANTITY | INVALID_PACKAGE | PACKAGE_NOT_AVAILABLE
+          (not for sale on this account) | PRICE_MISMATCH (only with the legacy `price` field) |
+          INSUFFICIENT_BALANCE { currentBalance, requiredBalance, needToLoad } | 404 PACKAGE_NOT_FOUND
+          (enterprise) | 409 DUPLICATE_REQUEST (concurrent duplicate) | 500 ORDER_PROCESSING_ERROR.
 
 3.4 GET /esims/order?orderReference=<ref>
   -> { success, order: { id, packageName, packageCode, status, amount, finalPrice, orderDate,
@@ -219,12 +234,19 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
        currency, features: { is_rechargeable: true }, is_unlimited }], pagination } }
   Errors: 400 MISSING_ICCID | 400 ESIM_NOT_TOPPABLE | 403 ESIM_ACCESS_DENIED.
 
-3.6 POST /topup/order   Body: { iccid, packageCode, quantity? }
+3.6 POST /topup/order   Body: { iccid, packageCode, idempotency_key? (send it), quantity? (ignored: always 1) }
   -> { success, message, orderReference, iccid, packageName, newBalance, currency,
        status: "completed", amount, profit, processing_time_ms,
        esimData: { newTotalVolumeGB, newRemainingVolumeGB, expiredTime } }
+     replay of a processed key: { success, duplicate: true, orderReference, iccid, packageName, status, amount, currency }
   Errors: MISSING_FIELDS | ESIM_NOT_FOUND | ESIM_NOT_TOPPABLE | INSUFFICIENT_BALANCE |
-          INVALID_TOPUP_PACKAGE | TOPUP_NOT_SUPPORTED.
+          INVALID_TOPUP_PACKAGE | TOPUP_NOT_SUPPORTED | PACKAGE_NOT_AVAILABLE | PRICE_MISMATCH |
+          409 DUPLICATE_REQUEST (same key / same eSIM+package still processing; nothing charged).
+
+3.6b GET /topup/order?orderReference=<ref>
+  -> { success, order: { id, orderReference, packageName, packageCode, status, amount, finalPrice,
+       orderDate, paymentMethod, paymentStatus } }   (in progress: { orderReference, status, details, created_at })
+  Errors: 400 MISSING_ORDER_REFERENCE | 404 ORDER_NOT_FOUND.
 
 3.7 GET /esims?page&limit<=100&status=all|NEW|ACTIVE|EXPIRED|CANCELLED|DEPLETED|DELETED&search=&include_base64=false
   -> { success, data: { esims: [{ id, iccid, package_name, package_code, countries: [names],
@@ -294,7 +316,7 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 ====================================================================
 [ ] One HTTP client module: signs requests, injects headers, parses the envelope, maps
     `code` to typed errors, reads X-RateLimit-Remaining, retries ONLY idempotent GETs
-    (max 2, exponential backoff) and order POSTs that carry idempotency_key.
+    (max 2, exponential backoff) and order / top-up POSTs that carry idempotency_key.
 [ ] Tables: packages (synced), orders, esims, webhook_deliveries (dedupe on X-Webhook-Id).
 [ ] Scheduled jobs: package sync (every 6–12 h, paced 1 req/s, never deletes), low-balance
     alert (hourly), optional nightly reconciliation of ACTIVE eSIMs.
@@ -302,4 +324,5 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 [ ] Webhook receiver: raw-body signature check + dedupe + 2xx within 10 s + async apply.
 [ ] Pending-order handling (bounded polling, then manual follow-up).
 [ ] Never log the secret key or webhook secret; never send them to a browser/mobile app.
-[ ] Read `currency` from responses; format IQD as integers.
+[ ] Read `currency` from responses (USD | IQD | EUR | CHF | NOK); format IQD as integers.
+[ ] Top-ups: idempotency_key on every POST /topup/order; retry only with the same key.

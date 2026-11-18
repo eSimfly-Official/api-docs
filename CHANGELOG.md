@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 2026-11-19 — Top-up idempotency, partial fills, wallet currencies
+
+- **Top-ups:** `POST /topup/order` accepts `idempotency_key` (a retry returns the original top-up with
+  `duplicate: true`); concurrent identical top-ups return `409 DUPLICATE_REQUEST`; `quantity` is
+  ignored (always one package). Documented `GET /topup/order?orderReference=` (top-up status) and the
+  full eligibility list (`ACTIVE`, `IN_USE`, `DEPLETED`, `EXPIRED`, `USED_EXPIRED`, `NEW` for eSIMfly).
+- **Orders:** `quantity` must be a whole number 1–10 (`INVALID_QUANTITY`); partial fills report
+  `quantity` / `requestedQuantity` / `note` and charge only what was delivered; `PACKAGE_NOT_AVAILABLE`.
+- **Packages:** voice / SMS allowances can be `"unlimited"`; phone-number lines carry `roaming`,
+  `voice_description`; `cost_usd`, `flag_url`; type `localesim`.
+- **Currency:** accounts on EUR, CHF or NOK wallets are quoted and charged in that currency.
+- **SDK / MCP:** `@esimfly/sdk` 0.2.0 (`topups.create({ idempotencyKey })`, `topups.get`) and
+  `@esimfly/mcp` 0.2.0 (idempotent `topup_esim`, new `get_topup` tool). AI prompts updated to match.
+
 ### Coming Soon
 - GraphQL API endpoint (beta)
 - WebSocket support for real-time updates

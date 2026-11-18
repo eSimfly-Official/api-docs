@@ -88,9 +88,10 @@ To enable the write tools add `"ESIMFLY_MCP_ALLOW_WRITES": "true"` to `env`.
 | `get_usage_report` | Daily usage by country and operator (up to 90 days) | read |
 | `list_orders` / `get_order` | Order history and one order with its eSIM | read |
 | `get_topup_packages` | Top-up options for one eSIM | read |
+| `get_topup` | One top-up's status by reference | read |
 | `get_webhook_settings` | Webhook URL, events, recent deliveries | read |
 | `create_order` | Buy eSIMs — preview, then `confirm: true` + idempotency key | write |
-| `topup_esim` | Add data to an eSIM — preview shows package and cost | write |
+| `topup_esim` | Add data to an eSIM — preview (package, cost), then `confirm: true` + idempotency key | write |
 | `cancel_esim` | Cancel an unused eSIM and refund to balance | write |
 | `suspend_esim` / `activate_esim` | Block / restore network access | write |
 | `send_sms` | Text the device holding the eSIM | write |
@@ -103,8 +104,8 @@ current) and `diagnose_esim` (a guided connectivity diagnosis).
 
 - **Read-only by default.** Write tools are not even registered unless you allow them — on the consent screen for the hosted server, or with `ESIMFLY_MCP_ALLOW_WRITES=true` locally.
 - **Two-step writes.** A call without `confirm: true` returns a preview — package, cost, balance — and
-  makes no mutable API call. `create_order` also requires the idempotency key from its own preview, so an
-  agent cannot place the same order twice.
+  makes no mutable API call. `create_order` and `topup_esim` also require the idempotency key from their
+  own preview, so an agent cannot place the same order or apply the same top-up twice.
 - Cancel and suspend are annotated as destructive so MCP hosts can ask for your approval.
 - Give the agent its own API key from the dashboard and rotate it if in doubt.
 

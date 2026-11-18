@@ -39,12 +39,14 @@ Simply provide the ICCID and package code - everything else is handled automatic
 |-------|------|----------|-------------|
 | iccid | String | **Yes** | eSIM ICCID to top up |
 | packageCode | String | **Yes** | Package code from topup packages endpoint |
-| quantity | Integer | No | Number of packages (default: 1) |
+| idempotency_key | String | Recommended | Your own unique id for this top-up (max 200 chars). A retry with the same key returns the original top-up (`duplicate: true`) instead of applying and charging it again |
+| quantity | Integer | No | Accepted for compatibility only — a top-up always applies (and charges for) exactly **one** package |
 
 The API automatically handles:
 - ✅ Package name lookup
-- ✅ Price calculation with your custom markup
+- ✅ Price calculation with your custom markup, in your account currency
 - ✅ Topup compatibility validation
+- ✅ Duplicate protection (see [Idempotency](#idempotency))
 
 ## eSIM Eligibility
 
@@ -52,31 +54,32 @@ An eSIM can be topped up when its status is one of the following (status compari
 
 | Status | Toppable |
 |--------|----------|
-| `ACTIVE` | ✅ All providers |
-| `DEPLETED` | ✅ All providers |
-| `USED_EXPIRED` | ✅ All providers |
+| `ACTIVE` / `IN_USE` | ✅ All providers |
+| `DEPLETED` (data used up, plan still open) | ✅ All providers |
+| `EXPIRED` / `USED_EXPIRED` (used, then expired) | ✅ All providers |
 | `NEW` (not yet activated) | ✅ eSIMfly-provided eSIMs only |
 
-If the eSIM is in any other status, the API returns `ESIM_NOT_TOPPABLE` (400).
+Every other status (cancelled, deleted, suspended, unused-expired, pending, ...) returns `ESIM_NOT_TOPPABLE` (400): the eSIM is gone or was never usable, so a top-up would be charged for nothing.
 
-### Example Requests
+### Example Request
 
-**Single Topup:**
-```json
-{
-  "iccid": "8943108170002570328",
-  "packageCode": "turkey-7days-1gb-topup"
-}
-```
-
-**Multiple Topups:**
 ```json
 {
   "iccid": "8943108170002570328",
   "packageCode": "TOPUP_PLGJ7UB3C",
-  "quantity": 2
+  "idempotency_key": "topup-48213"
 }
 ```
+
+## Idempotency
+
+Send an `idempotency_key` (your own top-up id) with every top-up:
+
+- **Retry with the same key** after a timeout or network error → you get the **original** top-up back with `"duplicate": true`. Nothing is applied or charged a second time.
+- **Without a key**, the API still blocks a *concurrent* identical top-up (same eSIM + same package while the first is still running) with `409 DUPLICATE_REQUEST` before anything is charged. Sequential top-ups are never blocked.
+- Top-up keys live in their own namespace — a key you already used for an [order](/docs/api/create-order) never replays here.
+
+The replay response carries `orderReference`, `iccid`, `packageName`, `status`, `amount` and `currency` (no `newBalance`, `profit` or `esimData` — call [Get Balance](/docs/api/balance) if you need the balance then).
 
 ## Response
 
@@ -135,13 +138,14 @@ If the eSIM is in any other status, the API returns `ESIM_NOT_TOPPABLE` (400).
 | orderReference | String | Unique order reference for tracking |
 | iccid | String | eSIM ICCID that was topped up |
 | packageName | String | Name of the topup package applied |
-| newBalance | Number | Your updated account balance in preferred currency |
-| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
+| newBalance | Number | Your updated account balance in your account currency (not on a `duplicate` replay) |
+| currency | String | Your account (wallet) currency: `USD`, `IQD`, `EUR`, `CHF` or `NOK`. Prices are quoted and charged in it — EUR / CHF / NOK at the daily charge rate |
 | status | String | Order status (always "completed" for successful orders) |
-| amount | Number | Total amount charged in user's preferred currency |
-| profit | Number | Your profit from this transaction in user's preferred currency |
+| amount | Number | Total amount charged, in `currency` |
+| profit | Number | Your profit from this transaction, in `currency` |
 | processing_time_ms | Integer | Processing time in milliseconds |
 | esimData | Object | Updated eSIM information |
+| duplicate | Boolean | `true` only when this is the replay of an earlier top-up with the same `idempotency_key` |
 
 ### eSIM Data Object
 
@@ -182,7 +186,7 @@ eSIM cannot be topped up:
 }
 ```
 
-Only `ACTIVE`, `DEPLETED`, or `USED_EXPIRED` eSIMs can be topped up (case-insensitive). eSIMs in `NEW` status can also be topped up when the eSIM is provided by eSIMfly.
+Only `ACTIVE`, `IN_USE`, `DEPLETED`, `EXPIRED` or `USED_EXPIRED` eSIMs can be topped up (case-insensitive). eSIMs in `NEW` status can also be topped up when the eSIM is provided by eSIMfly.
 
 Insufficient balance:
 ```json
@@ -212,9 +216,29 @@ Topup not supported:
 }
 ```
 
+Price mismatch (only when you send the optional legacy `price` field and it differs from the current price):
+```json
+{
+  "success": false,
+  "message": "Invalid price submitted",
+  "code": "PRICE_MISMATCH"
+}
+```
+
 ### 401 Unauthorized
 
 See [Authentication documentation](/docs/api-authentication#error-responses) for authentication errors.
+
+### 409 Conflict
+
+The same top-up is already being processed — the same `idempotency_key`, or (without a key) the same package onto the same eSIM. Nothing was charged; wait for the first request to finish (or retry later with the same key to get its result):
+```json
+{
+  "success": false,
+  "message": "An identical top-up for this eSIM is already being processed. Wait for it to finish before sending another.",
+  "code": "DUPLICATE_REQUEST"
+}
+```
 
 ### 500 Internal Server Error
 
@@ -225,15 +249,44 @@ See [Authentication documentation](/docs/api-authentication#error-responses) for
 }
 ```
 
+## Get Top-up Status
+
+```
+GET /api/v1/business/topup/order?orderReference={orderReference}
+```
+
+Look up one top-up by the `orderReference` the top-up call returned (same HMAC authentication).
+
+```json
+{
+  "success": true,
+  "order": {
+    "id": 51130,
+    "orderReference": "topup_1755559183090_vyf9w",
+    "packageName": "Top-up: Turkey 1GB 7Days",
+    "packageCode": "TOPUP_PLGJ7UB3C",
+    "status": "completed",
+    "amount": 2.45,
+    "finalPrice": 2.45,
+    "orderDate": "2026-11-19T10:12:03.000Z",
+    "paymentMethod": "balance",
+    "paymentStatus": "succeeded"
+  }
+}
+```
+
+A top-up still being processed returns only `orderReference`, `status`, `details` and `created_at` in `order`. Errors: `MISSING_ORDER_REFERENCE` (400), `ORDER_NOT_FOUND` (404).
+
 ## Examples
 
 ### Basic Topup Order
 
 ```javascript
-// Simple - just iccid and packageCode
+// iccid + packageCode, plus your own top-up id so a retry can never apply it twice
 const orderData = {
   iccid: '8943108170002570328',
-  packageCode: 'TOPUP_PLGJ7UB3C'
+  packageCode: 'TOPUP_PLGJ7UB3C',
+  idempotency_key: `topup-${myTopupId}`
 };
 
 const response = await fetch(
@@ -275,6 +328,9 @@ try {
       case 'INVALID_TOPUP_PACKAGE':
         console.log('Package not valid for this eSIM');
         break;
+      case 'DUPLICATE_REQUEST':
+        console.log('Same top-up already running - retry later with the same idempotency_key');
+        break;
       default:
         console.log('Topup failed:', result.error);
     }
@@ -306,9 +362,17 @@ try {
 
 1. **Get packages first**: Always call [Get Topup Packages](/docs/api/topup-packages) to get available options
 2. **Use exact codes**: Use the exact `package_code` returned from the packages endpoint
-3. **Handle errors gracefully**: Always check for insufficient balance and eSIM status errors
-4. **Store order reference**: Keep `orderReference` for customer support and tracking
-5. **Monitor profit**: Track your earnings using the `profit` field in responses
+3. **Always send an `idempotency_key`**: then a retry after a timeout is safe — it returns the original top-up instead of charging again
+4. **Handle errors gracefully**: Always check for insufficient balance and eSIM status errors
+5. **Store order reference**: Keep `orderReference` for customer support, tracking and [status lookups](#get-top-up-status)
+6. **Monitor profit**: Track your earnings using the `profit` field in responses
+
+With the [Node.js SDK](https://www.npmjs.com/package/@esimfly/sdk) (0.2.0+):
+
+```javascript
+const topup = await esimfly.topups.create({ iccid, packageCode, idempotencyKey: `topup-${myTopupId}` });
+const status = await esimfly.topups.get(topup.orderReference);
+```
 
 ## Relationship to Other Endpoints
 
@@ -320,4 +384,4 @@ try {
 
 If you have an existing integration that sends additional fields like `packageName` or `price`, it will continue to work without any changes. The API is fully backward compatible.
 
-For new integrations, we recommend using only `iccid` and `packageCode` (and optionally `quantity`) as shown in the examples above for simpler implementation.
+For new integrations, we recommend sending only `iccid`, `packageCode` and `idempotency_key` as shown in the examples above.

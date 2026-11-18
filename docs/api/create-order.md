@@ -38,7 +38,7 @@ Simply provide the package code - everything else is handled automatically.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | packageCode | String | **Yes** | Package code from the packages endpoint |
-| quantity | Integer | No | Number of eSIMs to order (default: 1, max: 10) |
+| quantity | Integer | No | Number of eSIMs to order: a whole number from 1 to 10 (default: 1). Anything else returns `INVALID_QUANTITY` |
 | recurring | Boolean | No | For O2 and Vodafone packages that support auto-renewal. Set to `true` to enable subscription. Default: `false` (one-time). Check `is_recurring` in the packages list to see which packages support this. |
 | idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
@@ -238,8 +238,8 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | orderReference | String | Unique order reference for tracking |
 | esimId | Integer | Primary eSIM ID (for single eSIM orders) |
 | packageName | String | Ordered package name |
-| newBalance | Number | Your updated account balance in preferred currency |
-| currency | String | Currency code based on the account: `USD` or `IQD`, or `EUR` for an [enterprise account](/docs/enterprise-accounts) |
+| newBalance | Number | Your updated account balance in your account currency |
+| currency | String | Your account (wallet) currency: `USD`, `IQD`, `EUR`, `CHF` or `NOK` (`EUR` for an [enterprise account](/docs/enterprise-accounts)). All amounts are quoted and charged in it — EUR / CHF / NOK at the daily charge rate |
 | lpaString | String | Raw LPA string (e.g., "LPA:1$smdp.address$activation-code") for QR code generation |
 | qrCodeUrl | String | Base64-encoded QR code image (data:image/png;base64,...) |
 | directAppleInstallUrl | String | Direct iPhone installation URL |
@@ -248,9 +248,12 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | amount | Number | Total order amount in user's preferred currency |
 | profit | Number | Your profit amount in user's preferred currency |
 | final_price | Number | Final price charged to your balance in preferred currency |
+| quantity | Integer | eSIMs actually provisioned — and charged for |
+| requestedQuantity | Integer | eSIMs you asked for. Lower `quantity` = [partial fill](#partial-fills) |
+| directAndroidInstallUrl | String | Direct Android installation URL for the first eSIM |
 | processing_time_ms | Integer | Order processing time in milliseconds |
 | esims | Array | Array of eSIM details |
-| note | String | Additional information (for pending orders) |
+| note | String | Additional information (pending orders and partial fills) |
 
 ### eSIM Object Fields
 
@@ -271,6 +274,18 @@ When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready 
 | total_duration | Number/null | Validity in days |
 | expired_time | String/null | Expiry date (ISO 8601) |
 | isPending | Boolean | Whether eSIM details are still being processed |
+| phoneNumber | String/null | The line's phone number, for phone-number packages that return it at order time |
+
+## Partial Fills
+
+Some packages provision one eSIM at a time. If only part of a multi-eSIM order could be provisioned,
+the order still succeeds with what was delivered:
+
+- `quantity` < `requestedQuantity`, and `esims` holds only the delivered eSIMs
+- you are charged for `quantity` only (`amount`, `final_price` and `profit` reflect that)
+- `note` explains, e.g. *"Only 2 of the 3 eSIMs requested could be provisioned. Your balance was charged for 2 only. Place a new order for the remainder."*
+
+Place a new order (with a new `idempotency_key`) for the remainder.
 
 :::note[Breaking change]
 The field previously named **`profileStatus`** has been renamed to **`sim_status`**. If your integration reads `profileStatus`, update it to `sim_status`.
@@ -557,6 +572,24 @@ Insufficient balance:
 }
 ```
 
+Invalid quantity (not a whole number from 1 to 10):
+```json
+{
+  "success": false,
+  "message": "quantity must be a whole number between 1 and 10",
+  "code": "INVALID_QUANTITY"
+}
+```
+
+Package not available for purchase on your account:
+```json
+{
+  "success": false,
+  "message": "This package is not available for purchase",
+  "code": "PACKAGE_NOT_AVAILABLE"
+}
+```
+
 ### 409 Conflict
 
 Duplicate request still in flight (same `idempotency_key`, or same package without a key):
@@ -715,8 +748,9 @@ if (result.success) {
 ## Quantity Limits
 
 - **Minimum**: 1 eSIM per order
-- **Maximum**: 10 eSIMs per order
+- **Maximum**: 10 eSIMs per order (a whole number — `1.5`, `0` or `11` return `INVALID_QUANTITY`)
 - **Multiple Orders**: For larger quantities, create multiple orders
+- **Partial fills**: check `quantity` against `requestedQuantity` (see [Partial Fills](#partial-fills))
 - **Same ICCID**: Each eSIM in an order has a unique ICCID
 
 ## Rate Limiting
