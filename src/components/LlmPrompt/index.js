@@ -66,7 +66,6 @@ export default function LlmPrompt({id, open = false}) {
     <div className={styles.card}>
       <div className={styles.header}>
         <p className={styles.title}>
-          <span aria-hidden="true">🤖</span>
           {isFull ? 'AI prompt — complete integration' : `AI prompt — ${prompt.title}`}
         </p>
         <div className={styles.actions}>

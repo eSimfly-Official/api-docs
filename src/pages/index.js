@@ -1,44 +1,59 @@
-import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
+import CodeBlock from '@theme/CodeBlock';
+import Heading from '@theme/Heading';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
-import Heading from '@theme/Heading';
 import styles from './index.module.css';
+
+const QUICKSTART = `import { ESIMfly } from '@esimfly/sdk';
+
+const esimfly = new ESIMfly({
+  accessCode: process.env.ESIMFLY_ACCESS_CODE,
+  secretKey: process.env.ESIMFLY_SECRET_KEY,
+});
+
+const order = await esimfly.orders.create({
+  packageCode: 'PHAJHEAYP',
+  idempotencyKey: 'order-1001',
+});
+
+console.log(order.esims[0].lpaString);`;
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero', styles.heroBanner)}>
+    <header className={styles.hero}>
       <div className="container">
-        <div className={styles.heroContent}>
-          <Heading as="h1" className={styles.heroTitle}>
-            {siteConfig.title}
-          </Heading>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
-          <p className={styles.heroDescription}>
-            Sell eSIM data packages for 200+ countries from your own app or store. One REST API for the
-            catalog, ordering, top-ups and usage — with an official Node.js SDK, real-time webhooks and
-            copy-paste prompts for AI coding assistants.
-          </p>
-          <pre className={styles.heroCode}><code>npm install @esimfly/sdk</code></pre>
-          <div className={styles.buttons}>
-            <Link
-              className={clsx('button button--primary button--lg', styles.primaryButton)}
-              to="/docs/intro">
-              Get Started →
-            </Link>
-            <Link
-              className={clsx('button button--outline button--lg', styles.secondaryButton)}
-              to="/docs/api/balance">
-              API Reference
-            </Link>
-            <Link
-              className={clsx('button button--outline button--lg', styles.secondaryButton)}
-              to="/docs/llm-integration">
-              AI Prompts
-            </Link>
+        <div className={styles.heroGrid}>
+          <div className={styles.heroText}>
+            <p className={styles.eyebrow}>{siteConfig.title}</p>
+            <Heading as="h1" className={styles.heroTitle}>
+              {siteConfig.tagline}
+            </Heading>
+            <p className={styles.heroDescription}>
+              Sell eSIM data packages for 200+ countries from your own app or store. One REST API for the
+              catalog, ordering, top-ups and usage — with an official Node.js SDK, real-time webhooks and
+              copy-paste prompts for AI coding assistants.
+            </p>
+            <div className={styles.actions}>
+              <Link className="button button--primary" to="/docs/intro">
+                Get started
+              </Link>
+              <Link className="button button--secondary" to="/docs/api/balance">
+                API reference
+              </Link>
+              <Link className={styles.textLink} to="/docs/llm-integration">
+                AI prompts →
+              </Link>
+            </div>
+            <code className={styles.install}>npm install @esimfly/sdk</code>
+          </div>
+          <div className={styles.heroCode}>
+            <CodeBlock language="javascript" title="order.js">
+              {QUICKSTART}
+            </CodeBlock>
           </div>
         </div>
       </div>

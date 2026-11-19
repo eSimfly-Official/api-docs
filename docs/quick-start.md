@@ -109,6 +109,6 @@ fetch('https://esimfly.net/api/v1/business/balance', {
 
 ## Need Help?
 
-- 📧 **Email**: support@esimfly.net
-- 💬 **Live Chat**: Available in dashboard
-- 📚 **API Test Tool**: [Test your connection](https://esimfly.net/business-dashboard/api-test)
+- **Email**: support@esimfly.net
+- **Live Chat**: Available in dashboard
+- **API Test Tool**: [Test your connection](https://esimfly.net/business-dashboard/api-test)

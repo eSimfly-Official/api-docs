@@ -43,10 +43,10 @@ Simply provide the package code - everything else is handled automatically.
 | idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
 The API automatically handles:
-- ✅ Package name lookup
-- ✅ Price calculation
-- ✅ Flag URL from database
-- ✅ Duration detection
+- Package name lookup
+- Price calculation
+- Flag URL from database
+- Duration detection
 
 ### Request Examples
 

@@ -144,6 +144,6 @@ All API responses follow this format:
 
 ## Support
 
-- 📧 **Email**: support@esimfly.net
-- 💬 **Live Chat**: Available in dashboard
-- 🧪 **Test Tool**: [API Test Page](https://esimfly.net/business-dashboard/api-test)
+- **Email**: support@esimfly.net
+- **Live Chat**: Available in dashboard
+- **Test Tool**: [API Test Page](https://esimfly.net/business-dashboard/api-test)

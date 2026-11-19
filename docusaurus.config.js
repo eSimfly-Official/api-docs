@@ -8,6 +8,17 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
+// Code themes matched to the brand palette (Ink & Violet): flat surfaces that
+// sit on the page instead of the stock GitHub / Dracula colours.
+const codeThemeLight = {
+  ...prismThemes.github,
+  plain: {color: '#0E1116', backgroundColor: '#F6F7F9'},
+};
+const codeThemeDark = {
+  ...prismThemes.vsDark,
+  plain: {color: '#E8EAED', backgroundColor: '#11141B'},
+};
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'eSIMfly Business API',
@@ -41,6 +52,15 @@ const config = {
     locales: ['en'],
   },
 
+  // Brand typography: IBM Plex Sans (text) + IBM Plex Mono (code)
+  headTags: [
+    {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'}},
+    {tagName: 'link', attributes: {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous'}},
+  ],
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap',
+  ],
+
   // Import static/llm/*.txt as plain strings so the AI prompts are a single
   // source of truth: served raw at /llm/<id>.txt AND rendered in the docs.
   plugins: [
@@ -70,10 +90,8 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // No "Edit this page" links: the template default pointed every page at
+          // the Docusaurus repository.
         },
         blog: false,
         theme: {
@@ -86,15 +104,16 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Default the whole site to dark mode (users can still toggle).
+      // Light first (the brand palette is ink on white); follow the visitor's
+      // system setting, and the toggle still works.
       colorMode: {
-        defaultMode: 'dark',
-        respectPrefersColorScheme: false,
+        defaultMode: 'light',
+        respectPrefersColorScheme: true,
       },
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      // Link preview card built from the brand kit (logo, IBM Plex Sans, palette)
+      image: 'img/esimfly-docs-card.png',
       navbar: {
-        title: 'eSIMfly Business API',
+        title: 'Business API',
         logo: {
           alt: 'eSIMfly Logo',
           src: 'https://esimfly.net/images/logo-blue.svg',
@@ -116,10 +135,9 @@ const config = {
       footer: {
         style: 'light',
         logo: {
-          alt: 'eSIMfly Business API',
+          alt: 'eSIMfly',
           src: 'https://esimfly.net/images/logo-blue.svg',
-          width: 160,
-          height: 51,
+          height: 26,
         },
         links: [
           {
@@ -206,8 +224,10 @@ const config = {
         copyright: `Copyright © ${new Date().getFullYear()} eSIMfly. All rights reserved.`,
       },
       prism: {
-        theme: prismThemes.github,
-        darkTheme: prismThemes.dracula,
+        theme: codeThemeLight,
+        darkTheme: codeThemeDark,
+        // json / python ship with prism-react-renderer; these two did not render highlighted
+        additionalLanguages: ['bash', 'php'],
       },
     }),
 };

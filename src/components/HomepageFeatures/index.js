@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import styles from './styles.module.css';
@@ -6,7 +5,6 @@ import styles from './styles.module.css';
 const FeatureList = [
   {
     title: 'Official SDK',
-    icon: '⚡',
     description: (
       <>
         <code>npm install @esimfly/sdk</code> — request signing, idempotent orders, paced catalog
@@ -17,17 +15,15 @@ const FeatureList = [
   },
   {
     title: 'Global Coverage',
-    icon: '🌍',
     description: (
       <>
-        Access to 200+ countries and territories. Deliver eSIM data packages 
+        Access to 200+ countries and territories. Deliver eSIM data packages
         instantly to travelers anywhere in the world.
       </>
     ),
   },
   {
     title: 'Real-time Webhooks',
-    icon: '📡',
     description: (
       <>
         Get a signed webhook the moment an eSIM is installed, changes status or runs low on
@@ -38,27 +34,24 @@ const FeatureList = [
   },
   {
     title: 'Instant Activation',
-    icon: '🚀',
     description: (
       <>
-        eSIMs are activated instantly upon purchase. No physical shipping, 
+        eSIMs are activated instantly upon purchase. No physical shipping,
         no delays. Perfect for last-minute travelers.
       </>
     ),
   },
   {
     title: 'Competitive Pricing',
-    icon: '💰',
     description: (
       <>
-        Wholesale rates for businesses. Volume discounts available. 
+        Wholesale rates for businesses. Volume discounts available.
         Transparent pricing with no hidden fees.
       </>
     ),
   },
   {
     title: 'Built for AI Assistants',
-    icon: '🤖',
     description: (
       <>
         Copy-paste prompts for every endpoint, one complete prompt for the whole API, and an
@@ -69,16 +62,12 @@ const FeatureList = [
   },
 ];
 
-function Feature({icon, title, description}) {
+function Feature({index, title, description}) {
   return (
-    <div className={clsx('col col--4', styles.featureCol)}>
-      <div className={styles.featureCard}>
-        <div className={styles.featureIcon}>{icon}</div>
-        <div className="text--center padding-horiz--md">
-          <Heading as="h3">{title}</Heading>
-          <p>{description}</p>
-        </div>
-      </div>
+    <div className={styles.feature}>
+      <span className={styles.index}>{String(index + 1).padStart(2, '0')}</span>
+      <Heading as="h3" className={styles.title}>{title}</Heading>
+      <p className={styles.description}>{description}</p>
     </div>
   );
 }
@@ -87,13 +76,15 @@ export default function HomepageFeatures() {
   return (
     <section className={styles.features}>
       <div className="container">
-        <div className={styles.featuresHeader}>
-          <h2>Why Choose eSIMfly Business API?</h2>
-          <p>Everything you need to sell eSIMs from your own product — SDK, REST API, webhooks and AI-ready docs</p>
+        <div className={styles.header}>
+          <Heading as="h2" className={styles.heading}>What&apos;s included</Heading>
+          <p className={styles.lead}>
+            Everything you need to sell eSIMs from your own product — SDK, REST API, webhooks and AI-ready docs
+          </p>
         </div>
-        <div className="row">
+        <div className={styles.grid}>
           {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+            <Feature key={props.title} index={idx} {...props} />
           ))}
         </div>
       </div>

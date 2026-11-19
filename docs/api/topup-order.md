@@ -43,10 +43,10 @@ Simply provide the ICCID and package code - everything else is handled automatic
 | quantity | Integer | No | Accepted for compatibility only — a top-up always applies (and charges for) exactly **one** package |
 
 The API automatically handles:
-- ✅ Package name lookup
-- ✅ Price calculation with your custom markup, in your account currency
-- ✅ Topup compatibility validation
-- ✅ Duplicate protection (see [Idempotency](#idempotency))
+- Package name lookup
+- Price calculation with your custom markup, in your account currency
+- Topup compatibility validation
+- Duplicate protection (see [Idempotency](#idempotency))
 
 ## eSIM Eligibility
 
@@ -54,10 +54,10 @@ An eSIM can be topped up when its status is one of the following (status compari
 
 | Status | Toppable |
 |--------|----------|
-| `ACTIVE` / `IN_USE` | ✅ All providers |
-| `DEPLETED` (data used up, plan still open) | ✅ All providers |
-| `EXPIRED` / `USED_EXPIRED` (used, then expired) | ✅ All providers |
-| `NEW` (not yet activated) | ✅ eSIMfly-provided eSIMs only |
+| `ACTIVE` / `IN_USE` | All providers |
+| `DEPLETED` (data used up, plan still open) | All providers |
+| `EXPIRED` / `USED_EXPIRED` (used, then expired) | All providers |
+| `NEW` (not yet activated) | eSIMfly-provided eSIMs only |
 
 Every other status (cancelled, deleted, suspended, unused-expired, pending, ...) returns `ESIM_NOT_TOPPABLE` (400): the eSIM is gone or was never usable, so a top-up would be charged for nothing.
 
