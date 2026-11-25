@@ -105,7 +105,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | iccid | String | ICCID (SIM card number) |
 | package_name | String | Package display name |
 | package_code | String | Package identifier (without provider prefix) |
-| countries | Array | List of countries covered |
+| countries | Array | List of countries covered (for a local plan with roaming: the home country and every roaming country) |
 | status | String | Standardized status: NEW, ACTIVE, EXPIRED, CANCELLED, DEPLETED, DELETED |
 | data | Object | Data usage information |
 | data.total_mb | Integer | Total data in MB (0 for unlimited) |
@@ -134,6 +134,13 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | sim_status | String/null | Provider SIM resource status (e.g. `AFFECTED` = assigned, `FREE` = released). **Not** an SM-DP+ status. |
 | esim_status | String/null | Human-readable lifecycle label: `New`, `Assigned (Not Installed)`, `Installed`, `Active`, `Not Active` |
 | profile_status | String/null | eSIM profile (BPP) install status (e.g. `Enable`, `Disable`) |
+| install_pin | String/null | 6-digit installation ePIN. Some eSIMs ask for it on the phone **while installing** — give it to your customer together with the QR code. `null` when the eSIM needs none |
+| sim_pin | String/null | SIM PIN delivered with the eSIM, for eSIMs that ship one. Needed only if the phone asks for a SIM PIN. `null` otherwise |
+| apn | String/null | APN to enter by hand, set only for eSIMs whose provider says mobile data may need a manual APN. `null` means the APN is configured automatically |
+| breakout_country | String/null | Country the data breaks out to the internet in (the country the eSIM's IP address appears to be in) |
+| breakout_country_code | String/null | ISO code of `breakout_country` |
+
+`install_pin`, `sim_pin`, `apn`, `breakout_country` and `breakout_country_code` are returned for packages from some providers only; they are `null` (or omitted) otherwise. `install_pin` and `sim_pin` are read live from the provider and are never stored by eSIMfly.
 
 ## Status Values
 
@@ -358,6 +365,12 @@ Example manual installation data:
   }
 }
 ```
+
+### Installation ePIN, SIM PIN and APN
+- **install_pin**: a few eSIM profiles ask for a 6-digit ePIN while installing. When `install_pin` is set, show it to your customer next to the QR code — without it the eSIM cannot be installed.
+- **sim_pin**: when set, the SIM PIN to enter if the phone asks for one after installing.
+- **apn**: when set, tell your customer to enter this APN in the mobile data settings if data does not work. `null` = automatic.
+- The package's `notes` (see [Get All Packages](/docs/api/packages)) describe these steps before purchase.
 
 ## QR Code Handling
 

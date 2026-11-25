@@ -32,9 +32,13 @@ RESPONSE 200
       qr_code: "https://storage.esimfly.net/qr-codes/....png",
       manual_installation: { smdp_address, activation_code, lpa_format },
       direct_apple_installation_url, direct_android_installation_url, flag_url, created_at,
-      is_pending, phone_number, imsi, sim_status, esim_status, profile_status }],
+      is_pending, phone_number, imsi, sim_status, esim_status, profile_status,
+      install_pin, sim_pin, apn, breakout_country, breakout_country_code }],
     pagination: { page, limit, total, total_pages } } }
   Status mapping: NEW (not activated), ACTIVE, EXPIRED, CANCELLED, DEPLETED, DELETED.
+  install_pin: 6-digit ePIN some eSIMs ask for WHILE INSTALLING — show it with the QR code (null = none).
+  sim_pin: SIM PIN delivered with the eSIM (null = none). apn: set only when data may need a manual APN
+  (null = automatic). breakout_country(_code): IP exit country. Codes are read live, never stored.
 
 INTEGRATION PATTERN
 1. Populate our esims table from POST /esims/order responses at purchase time. Do not "import" eSIMs

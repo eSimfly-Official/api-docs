@@ -35,7 +35,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | search | String | - | Search packages by country name or destination |
-| type | String | - | Filter by package type: "local", "regional", or "global". Enterprise self-service accounts return `"enterprise"` instead — see [Enterprise accounts](/docs/enterprise-accounts) |
+| type | String | - | Filter by package type: `"local"` (single-country plans, **including** `"localesim"`), `"localesim"` (only single-country plans on a local carrier profile — "Local eSIM"), `"regional"`, or `"global"`. Enterprise self-service accounts return `"enterprise"` instead — see [Enterprise accounts](/docs/enterprise-accounts) |
 | page | Integer | 1 | Page number for pagination |
 | limit | Integer | 50 | Number of results per page (max 100) |
 
@@ -187,7 +187,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 | is_unlimited | Boolean | Unlimited data flag |
 | has_voice | Boolean | Has voice minutes included |
 | has_sms | Boolean | Has SMS included |
-| countries | Array | ISO country codes covered by the package, e.g. `["AT","BE","DE"]` (eSIMfly packages). Useful for regional/global packages to see exactly which countries are included |
+| countries | Array | ISO country codes covered by the package, e.g. `["AT","BE","DE"]`. Useful for regional/global packages to see exactly which countries are included. For a local plan that includes roaming (e.g. a UK plan with roaming in Europe) this lists the home country **and** every roaming country |
 | locationNetworkList | Array | Detailed network coverage by location |
 | networks | Array | Raw per-network coverage rows with MCC/MNC and continent detail (eSIMfly packages). See [Networks Structure](#networks-structure) |
 
@@ -208,6 +208,22 @@ These fields are included for packages that come with a phone number (UK, France
 | roaming | Object/null | `{ data_gb, zone }`. On these lines `data_amount_gb` is the **home-country** allowance; `roaming` is the allowance usable while roaming in `zone` (e.g. `"EU"`, `"EU27 + UK"`) |
 | voice_description | String/null | The voice allowance in the provider's own words, e.g. `"Unlimited Spain + 1'000 min International"` |
 | voice_details | Object/null | Call and text details (see below) |
+
+### Plan Details (Some Providers)
+
+Packages from some providers carry extra detail. These fields are omitted when a provider does not supply them, so treat a missing field the same as `null`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| speed | String/null | Network generation, e.g. `"4G"`, `"5G"` or `"4G/5G"` (5G where available, 4G elsewhere) |
+| breakout_country | String/null | Country the data breaks out to the internet in, i.e. the country the eSIM's IP address appears to be in, e.g. `"Netherlands"`. Can differ from the country you are in |
+| breakout_country_code | String/null | ISO code of `breakout_country`, e.g. `"NL"` |
+| daily_data_gb | Number/null | Day-based plans: high-speed data per day in GB (e.g. `5` for a "5 GB/day" plan). `null` when the plan states no daily cap |
+| notes | Array of strings | Provider-stated restrictions and setup steps, in English — show them to your customer before purchase. Examples: `"Hotspot / tethering is not supported"`, `"After 50 GB, speed drops to 128 kbps"`, `"If mobile data doesn't work, set the APN manually to netmon.vodafone.it"`, `"Installing asks for a 6-digit ePIN - it is shown on your eSIM page after purchase"`. Empty when there is nothing to note |
+
+:::tip Installation ePIN and SIM PIN
+When a package's `notes` mention an installation ePIN or a SIM PIN, read the code from the eSIM after ordering: [`GET /esims`](/docs/api/esims) returns it as `install_pin` / `sim_pin`. The ePIN is entered on the phone while installing the eSIM.
+:::
 
 ### Voice Details Structure
 

@@ -83,7 +83,8 @@ A) CATALOGUE — sync GET /esims/packages into your own database. Do NOT proxy i
      features (JSON), countries (JSON array of ISO codes, may be absent), locationNetworkList
      (JSON), networks (JSON), provider extras if present (phone_number, network_carrier,
      has_5g, has_hotspot, can_extend, is_recurring, activation_policy, data_breakdown,
-     voice_details), plus your own columns: last_seen_at, is_active, sell_price.
+     voice_details, speed, breakout_country, breakout_country_code, daily_data_gb, notes),
+     plus your own columns: last_seen_at, is_active, sell_price.
    - After a full successful sync, set is_active=false for rows whose last_seen_at is older
      than this run. NEVER delete rows — orders and eSIMs reference them.
    - If any page fails, abort the deactivation step (keep the previous catalogue live).
@@ -188,7 +189,9 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
        // enterprise only:
        source: "enterprise", account: string, live: boolean, as_of: ISO } }
 
-3.2 GET /esims/packages?page=1&limit=100[&type=local|regional|global][&search=Turkey]
+3.2 GET /esims/packages?page=1&limit=100[&type=local|localesim|regional|global][&search=Turkey]
+  type=local includes "localesim" (Local eSIMs: single-country plans on a local carrier profile);
+  type=localesim returns only those.
   -> { success, data: { packages: Package[], pagination: { page, limit, total, total_pages } } }
   Package: { package_code, name, region, type, data_amount_gb, validity_days, cost, currency,
     features: { voice_minutes, sms_count, is_rechargeable }, is_unlimited, has_voice, has_sms,
@@ -200,8 +203,13 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
     phone_number, network_carrier, has_5g, has_hotspot, can_extend, is_recurring,
     activation_policy: "immediate"|"first_use"|"on_first_connection", data_breakdown, voice_details,
     roaming: { data_gb, zone } (data_amount_gb = home allowance, roaming = allowance in `zone`),
-    voice_description, flag_url, cost_usd (same buy price in USD, some providers) }
+    voice_description, flag_url, cost_usd (same buy price in USD, some providers),
+    // plan details (optional, some providers; missing = null):
+    speed ("4G"|"5G"|"4G/5G"), breakout_country + breakout_country_code (IP exit country),
+    daily_data_gb (day-based plans: high-speed GB per day),
+    notes: string[] (provider-stated restrictions / setup steps in English - show before purchase) }
   type may also be "localesim" (single-country plan on a local carrier profile).
+  countries: for a local plan with roaming, the home country AND every roaming country.
   Notes: only >=1 GB packages are returned; sorted local -> regional -> global; enterprise
   self-service accounts get type "enterprise" and ent_ codes.
 
@@ -254,8 +262,12 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
        validity: { days, activated_at, expires_at, is_expired }, qr_code (URL),
        manual_installation: { smdp_address, activation_code, lpa_format },
        direct_apple_installation_url, direct_android_installation_url, flag_url, created_at,
-       is_pending, phone_number, imsi, sim_status, esim_status, profile_status }], pagination } }
+       is_pending, phone_number, imsi, sim_status, esim_status, profile_status,
+       install_pin, sim_pin, apn, breakout_country, breakout_country_code }], pagination } }
   Unlimited plans: total_mb = 0, remaining_mb = 0, is_unlimited = true.
+  install_pin: 6-digit ePIN some eSIMs ask for WHILE INSTALLING - give it to the customer with the
+  QR code (null = none). sim_pin: SIM PIN shipped with the eSIM (null = none). apn: set only when
+  data may need a manual APN (null = automatic). Codes are read live, never stored.
 
 3.8 GET /esims/usage/query?iccid=<iccid>   (or ?order_id=<orderReference>)
   -> { success, data: { esim: { iccid, order_id, package_name, status },

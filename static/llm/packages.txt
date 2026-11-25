@@ -27,7 +27,8 @@ COMMON RULES (apply to every eSIMfly request)
 ENDPOINT
   GET https://esimfly.net/api/v1/business/esims/packages?page=1&limit=100
   Query params: page (default 1), limit (default 50, max 100),
-                type = local | regional | global   (optional; enterprise self-service accounts get "enterprise"),
+                type = local | localesim | regional | global   (optional; "local" includes "localesim" = single-country
+                       plans on a local carrier profile, "localesim" returns only those; enterprise self-service accounts get "enterprise"),
                 search = country/region name        (optional; ad-hoc lookups only — NOT for the sync).
 
 RESPONSE 200
@@ -40,13 +41,17 @@ RESPONSE 200
     currency: "USD"|"IQD"|"EUR"|"CHF"|"NOK" (account wallet currency), cost_usd?, flag_url?,
     features: { voice_minutes: number|"unlimited", sms_count: number|"unlimited", is_rechargeable },
     is_unlimited, has_voice, has_sms,
-    countries?: ["AT","BE",...]            // ISO alpha-2, eSIMfly packages — full coverage list for regional/global
+    countries?: ["AT","BE",...]            // ISO alpha-2 — full coverage list (regional/global; a local plan with roaming lists home + roaming countries)
     locationNetworkList: [{ locationName, locationLogo, operatorList: [{ operatorName, networkType }] }],
     networks?: [{ network_id, network_name, network_type, country_code, country_name, country_iso2, continent, mcc_code, mnc_code }],
     // phone-number line extras (optional): phone_number, network_carrier, has_5g, has_hotspot, can_extend,
     // is_recurring, activation_policy: "immediate"|"first_use"|"on_first_connection", data_breakdown,
     // roaming: { data_gb, zone } (data_amount_gb = HOME allowance; roaming = allowance inside `zone`),
     // voice_description (provider wording), voice_details
+    // plan details (optional, some providers; missing = null):
+    // speed: "4G"|"5G"|"4G/5G", breakout_country + breakout_country_code (IP exit country, e.g. "Netherlands"/"NL"),
+    // daily_data_gb (day-based plans: high-speed GB per day), notes: string[] (provider-stated restrictions and
+    // setup steps in English, e.g. "Hotspot / tethering is not supported" — show them to the customer before purchase)
   }
   Notes: only packages >= 1 GB are returned; sorted local -> regional -> global; duplicate unlimited
   plans are collapsed to the cheapest per duration.
