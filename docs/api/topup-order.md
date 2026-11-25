@@ -66,7 +66,7 @@ Every other status (cancelled, deleted, suspended, unused-expired, pending, ...)
 ```json
 {
   "iccid": "8943108170002570328",
-  "packageCode": "TOPUP_PLGJ7UB3C",
+  "packageCode": "2191323",
   "idempotency_key": "topup-48213"
 }
 ```
@@ -264,7 +264,7 @@ Look up one top-up by the `orderReference` the top-up call returned (same HMAC a
     "id": 51130,
     "orderReference": "topup_1755559183090_vyf9w",
     "packageName": "Top-up: Turkey 1GB 7Days",
-    "packageCode": "TOPUP_PLGJ7UB3C",
+    "packageCode": "2191323",
     "status": "completed",
     "amount": 2.45,
     "finalPrice": 2.45,
@@ -285,7 +285,7 @@ A top-up still being processed returns only `orderReference`, `status`, `details
 // iccid + packageCode, plus your own top-up id so a retry can never apply it twice
 const orderData = {
   iccid: '8943108170002570328',
-  packageCode: 'TOPUP_PLGJ7UB3C',
+  packageCode: '2191323',
   idempotency_key: `topup-${myTopupId}`
 };
 

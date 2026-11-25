@@ -57,7 +57,7 @@ See [Get All Packages](/docs/api/packages) for detailed documentation.
   "data": {
     "packages": [
       {
-        "package_code": "PHAJHEAYP",
+        "package_code": "1664775",
         "name": "United States 1GB 7Days",
         "region": "United States",
         "type": "local",
@@ -97,7 +97,7 @@ See [Create Order](/docs/api/create-order) for detailed documentation.
 **Request Body:**
 ```json
 {
-  "packageCode": "merhaba-7days-1gb",
+  "packageCode": "1648812",
   "packageName": "Turkey 1 GB 7 Days", 
   "price": 2.72,
   "quantity": 1,
@@ -151,7 +151,7 @@ Check the status of a specific order.
   "order": {
     "id": 2503,
     "packageName": "Turkey 1 GB 7 Days",
-    "packageCode": "merhaba-7days-1gb",
+    "packageCode": "1648812",
     "status": "completed",
     "amount": 2.72,
     "finalPrice": 2.72,
@@ -193,7 +193,7 @@ See [Get Topup Packages](/docs/api/topup-packages) for detailed documentation.
   "data": {
     "packages": [
       {
-        "package_code": "TOPUP_PXOO225PI",
+        "package_code": "2191323",
         "name": "Iraq 3GB 30Days",
         "data_amount_gb": 3,
         "validity_days": 30,
@@ -224,7 +224,7 @@ See [Get Topup Packages](/docs/api/topup-packages) for detailed documentation.
   "data": {
     "packages": [
       {
-        "package_code": "TOPUP_PXOO225PI",
+        "package_code": "2191323",
         "name": "Iraq 3GB 30Days",
         "data_amount_gb": 3,
         "validity_days": 30,
@@ -258,7 +258,7 @@ See [Process Topup Order](/docs/api/topup-order) for detailed documentation.
 ```json
 {
   "iccid": "8943108170002570328",
-  "packageCode": "TOPUP_PLGJ7UB3C",
+  "packageCode": "2191323",
   "packageName": "Iraq 1GB 7Days",
   "price": 3.68,
   "quantity": 1
@@ -311,7 +311,7 @@ See [List All eSIMs](/docs/api/esims) for detailed documentation.
         "id": 12345,
         "iccid": "8910300001234567890",
         "package_name": "Sweden 1GB - 7 Days",
-        "package_code": "sweden-7days-1gb",
+        "package_code": "1964997",
         "countries": ["Sweden"],
         "status": "ACTIVE",
         "data": {
@@ -423,7 +423,7 @@ See [Orders](/docs/api/orders) for detailed documentation.
         "id": 12345,
         "order_reference": "ES-1234567890-ABC",
         "package_name": "United States 1GB 7Days",
-        "package_code": "PHAJHEAYP",
+        "package_code": "1664775",
         "amount": 1.44,
         "currency": "USD",
         "status": "completed",

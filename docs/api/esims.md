@@ -53,7 +53,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "id": 12345,
         "iccid": "8910300001234567890",
         "package_name": "Sweden 1GB - 7 Days", 
-        "package_code": "sweden-7days-1gb",
+        "package_code": "1964997",
         "countries": ["Sweden"],
         "status": "ACTIVE",
         "data": {

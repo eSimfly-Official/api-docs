@@ -174,7 +174,7 @@ async function main() {
 
     // Order an eSIM
     const order = await api.orderESIM(
-      'US1GB7D',
+      '1664775',
       'USA 1GB - 7 Days',
       4.50
     );
@@ -317,7 +317,7 @@ def main():
         
         # Order an eSIM
         order = api.order_esim(
-            'US1GB7D',
+            '1664775',
             'USA 1GB - 7 Days',
             4.50
         )
@@ -492,7 +492,7 @@ try {
     
     // Order an eSIM
     $order = $api->orderESIM(
-        'US1GB7D',
+        '1664775',
         'USA 1GB - 7 Days',
         4.50
     );
@@ -525,7 +525,7 @@ curl -X POST https://esimfly.net/api/v1/business/esims/order \
   -H "RT-AccessCode: esf_your_access_code" \
   -H "Content-Type: application/json" \
   -d '{
-    "packageCode": "US1GB7D",
+    "packageCode": "1664775",
     "packageName": "USA 1GB - 7 Days",
     "price": 4.50,
     "quantity": 1
@@ -550,7 +550,7 @@ TIMESTAMP=$(date +%s%3N)
 REQUEST_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
 
 # Request body
-BODY='{"packageCode":"US1GB7D","packageName":"USA 1GB - 7 Days","price":4.50}'
+BODY='{"packageCode":"1664775","packageName":"USA 1GB - 7 Days","price":4.50}'
 
 # Calculate signature
 SIGN_DATA="${TIMESTAMP}${REQUEST_ID}${ACCESS_CODE}${BODY}"

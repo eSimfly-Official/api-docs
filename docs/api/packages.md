@@ -50,7 +50,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "data": {
     "packages": [
       {
-        "package_code": "PHAJHEAYP",
+        "package_code": "1664775",
         "name": "United States 1GB 7Days",
         "region": "United States",
         "type": "local",
@@ -126,7 +126,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "data": {
     "packages": [
       {
-        "package_code": "PHAJHEAYP",
+        "package_code": "1664775",
         "name": "United States 1GB 7Days",
         "region": "United States",
         "type": "local",
@@ -170,7 +170,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
 
 | Field | Type | Description |
 |-------|------|-------------|
-| package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"PHAJHEAYP"`, `"1654977"`, or `"ent_1234567"` for an enterprise account's own package). Pass it back exactly as received |
+| package_code | String | Unique package identifier. Treat it as an opaque string — formats vary by provider (for example `"1648812"`, `"1654977"`, or `"ent_1234567"` for an enterprise account's own package). Pass it back exactly as received |
 | name | String | Package display name |
 | region | String | Region or country name |
 | type | String | Package type: `"local"`, `"localesim"` (single-country plan on a local carrier profile), `"regional"`, `"global"`, or `"enterprise"` for an enterprise self-service account's own packages |

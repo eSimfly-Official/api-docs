@@ -49,7 +49,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "data": {
     "packages": [
       {
-        "package_code": "TOPUP_PXOO225PI",
+        "package_code": "2191323",
         "name": "Iraq 3GB 30Days",
         "data_amount_gb": 3,
         "validity_days": 30,
@@ -61,7 +61,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "is_unlimited": false
       },
       {
-        "package_code": "turkey-7days-1gb-topup",
+        "package_code": "1648812",
         "name": "Turkey 1GB 7Days",
         "data_amount_gb": 1,
         "validity_days": 7,
@@ -90,7 +90,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
   "data": {
     "packages": [
       {
-        "package_code": "TOPUP_PXOO225PI",
+        "package_code": "2191323",
         "name": "Iraq 3GB 30Days",
         "data_amount_gb": 3,
         "validity_days": 30,
@@ -102,7 +102,7 @@ This endpoint requires HMAC authentication. See [Authentication](/docs/api-authe
         "is_unlimited": false
       },
       {
-        "package_code": "turkey-7days-1gb-topup",
+        "package_code": "1648812",
         "name": "Turkey 1GB 7Days",
         "data_amount_gb": 1,
         "validity_days": 7,

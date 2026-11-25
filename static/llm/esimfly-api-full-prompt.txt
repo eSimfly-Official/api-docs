@@ -51,7 +51,7 @@ Rate limits are per API key and shown in the business dashboard (typically 100 r
 Currency: read the `currency` field from every response (USD, IQD, or EUR for
   enterprise accounts). Never hard-code it. IQD amounts are whole numbers.
 
-Package codes are OPAQUE strings ("PHAJHEAYP", "1654977", "ent_1234567", "merhaba-7days-1gb").
+Package codes are OPAQUE strings ("1648812", "1654977", "ent_1234567").
   Never parse, prefix, trim or reformat them. Store and send back verbatim.
 
 Units: timestamps ISO 8601 UTC; package data in GB (data_amount_gb); eSIM usage in MB

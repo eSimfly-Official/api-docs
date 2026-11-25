@@ -15,7 +15,7 @@ const esimfly = new ESIMfly({
 });
 
 const order = await esimfly.orders.create({
-  packageCode: 'PHAJHEAYP',
+  packageCode: '1664775',
   idempotencyKey: 'order-1001',
 });
 

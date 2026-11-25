@@ -35,7 +35,7 @@ RESPONSE 200
   { "success": true, "data": { "packages": [Package, ...],
     "pagination": { "page": 1, "limit": 100, "total": 7123, "total_pages": 72 } } }
   Package = {
-    package_code: string (OPAQUE — "PHAJHEAYP", "1654977", "ent_1234567", "merhaba-7days-1gb"),
+    package_code: string (OPAQUE — "1648812", "1654977", "ent_1234567"),
     name, region, type: "local"|"localesim"|"regional"|"global"|"enterprise",
     data_amount_gb: number, validity_days: int, cost: number (YOUR buy price = what an order charges),
     currency: "USD"|"IQD"|"EUR"|"CHF"|"NOK" (account wallet currency), cost_usd?, flag_url?,

@@ -25,7 +25,7 @@ ENDPOINT
 
 RESPONSE 200
   { "success": true, "data": { "packages": [
-      { "package_code": "TOPUP_PXOO225PI", "name": "Iraq 3GB 30Days", "data_amount_gb": 3, "validity_days": 30,
+      { "package_code": "2191323", "name": "Iraq 3GB 30Days", "data_amount_gb": 3, "validity_days": 30,
         "cost": 10.56, "currency": "USD", "features": { "is_rechargeable": true }, "is_unlimited": false } ],
     "pagination": { "page": 1, "limit": 100, "total": 8, "total_pages": 1 } } }
   package_code here is what you pass to POST /topup/order. cost = your buy price.

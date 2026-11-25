@@ -70,7 +70,7 @@ function generateHMACHeaders(accessCode, secretKey, requestBody = '') {
 const headers = generateHMACHeaders(
   'esf_your_access_code',
   'sk_your_secret_key',
-  JSON.stringify({ packageCode: 'PHAJHEAYP' })
+  JSON.stringify({ packageCode: '1664775' })
 );
 ```
 
@@ -105,7 +105,7 @@ def generate_hmac_headers(access_code, secret_key, request_body=''):
     }
 
 # Example usage
-body = json.dumps({'packageCode': 'PHAJHEAYP'})
+body = json.dumps({'packageCode': '1664775'})
 headers = generate_hmac_headers(
     'esf_your_access_code',
     'sk_your_secret_key',
@@ -135,7 +135,7 @@ function generateHMACHeaders($accessCode, $secretKey, $requestBody = '') {
 }
 
 // Example usage
-$body = json_encode(['packageCode' => 'PHAJHEAYP']);
+$body = json_encode(['packageCode' => '1664775']);
 $headers = generateHMACHeaders(
     'esf_your_access_code',
     'sk_your_secret_key',
@@ -153,17 +153,17 @@ Timestamp: 1628670421000
 RequestID: 4ce9d9cd-ac9e-4e17-b3a2-c66c358c1ce2
 AccessCode: esf_11111
 SecretKey: sk_1111
-RequestBody: {"packageCode":"PHAJHEAYP"}
+RequestBody: {"packageCode":"1664775"}
 ```
 
 **Signing String:**
 ```
-16286704210004ce9d9cd-ac9e-4e17-b3a2-c66c358c1ce2esf_11111{"packageCode":"PHAJHEAYP"}
+16286704210004ce9d9cd-ac9e-4e17-b3a2-c66c358c1ce2esf_11111{"packageCode":"1664775"}
 ```
 
 **Calculated Signature:**
 ```
-E8C3D2F91A5B4C7D8E9F0A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D
+357C35458B3B2806FDA3A03B04C3048170BB451F19585484AD85260F3949C0D1
 ```
 
 ## Important Notes

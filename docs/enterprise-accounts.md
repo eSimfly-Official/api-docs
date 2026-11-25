@@ -92,7 +92,7 @@ await api.post('/esims/order', { packageCode: 'ent_1234567', quantity: 1 });
 ```
 
 :::tip Treat package codes as opaque
-Package code formats differ between providers — `"PHAJHEAYP"`, `"1654977"`,
+Package code formats differ between providers — `"1648812"`, `"1654977"`,
 `"ent_1234567"`. Never parse one or assume it is a number. Send back exactly what
 `/esims/packages` gave you.
 :::

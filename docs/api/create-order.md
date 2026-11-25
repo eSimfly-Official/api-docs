@@ -53,14 +53,14 @@ The API automatically handles:
 **Single eSIM:**
 ```json
 {
-  "packageCode": "TR1GB7D"
+  "packageCode": "1648812"
 }
 ```
 
 **Multiple eSIMs:**
 ```json
 {
-  "packageCode": "merhaba-15days-2gb",
+  "packageCode": "1654962",
   "quantity": 3
 }
 ```
@@ -524,7 +524,7 @@ def create_esim_order(package_code, quantity=1):
 
 # Example usage
 result = create_esim_order(
-    package_code='merhaba-7days-1gb',
+    package_code='1648812',
     quantity=1
 )
 ```
@@ -780,7 +780,7 @@ This endpoint is subject to:
 
 ```javascript
 try {
-  const result = await createOrder('merhaba-7days-1gb');
+  const result = await createOrder('1648812');
 
   if (!result.success) {
     switch (result.code) {
