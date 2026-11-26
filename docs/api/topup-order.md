@@ -275,7 +275,7 @@ Look up one top-up by the `orderReference` the top-up call returned (same HMAC a
 }
 ```
 
-A top-up still being processed returns only `orderReference`, `status`, `details` and `created_at` in `order`. Errors: `MISSING_ORDER_REFERENCE` (400), `ORDER_NOT_FOUND` (404).
+A top-up still being processed returns only `orderReference`, `status`, `details` and `created_at` in `order`. `details` contains only `status`, and when present `message`, `esim_id` and `topup_order_id`. Errors: `MISSING_ORDER_REFERENCE` (400), `ORDER_NOT_FOUND` (404).
 
 ## Examples
 

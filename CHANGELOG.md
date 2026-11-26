@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 2026-11-26 — Phone-number line renew / replace / auto-renew, response cleanups
+
+- **New endpoints (phone-number lines, `can_extend: true`):** `GET/POST /esims/renew` (one more period from
+  the wallet, `Idempotency-Key`, `202 processing` when the extension is completed by support),
+  `GET/POST /esims/replace` (free new number within 3 days of purchase, once per order), and
+  `GET/POST /esims/auto-renew` (monthly renewals from the wallet, per line or account-wide).
+- **Orders:** `recurring` is ignored — phone-number lines are sold one period at a time; new optional
+  `autoRenew: true`.
+- **Cancel:** phone-number lines can be cancelled within 3 days of purchase (where the network allows
+  online cancellation), full price back to the wallet.
+- **Response cleanups:** `GET /esims/packages` no longer returns `provider`; the order lookup no longer
+  returns `esim.provider` and returns `packageCode` exactly as ordered; eSIMs still being provisioned have
+  `iccid: null` (also in `GET /orders`); top-up status `details` holds only `status`, `message`,
+  `esim_id`, `topup_order_id`; error messages never pass through upstream network text.
+
 ### 2026-11-19 — Top-up idempotency, partial fills, wallet currencies
 
 - **Top-ups:** `POST /topup/order` accepts `idempotency_key` (a retry returns the original top-up with

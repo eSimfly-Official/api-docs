@@ -1,0 +1,49 @@
+# eSIMfly Business API — Renew eSIM (GET/POST /esims/renew) — prompt for AI coding assistants
+
+TASK: let our customers (or our support team) renew a phone-number line by one more period (usually 30 days),
+paid from our eSIMfly wallet. Only packages with can_extend = true are renewable. Lines are sold one period at
+a time; the `recurring` order flag is ignored.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, message, code }. Branch on `success` and `code`.
+- Rate limits are per API key, shown in the business dashboard (typically 100/minute, 1,000/hour, 10,000/day) -> RATE_LIMIT_EXCEEDED.
+- Read `currency` from responses (the account wallet currency). Never hard-code it. IQD amounts are integers.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINTS
+  GET  https://esimfly.net/api/v1/business/esims/renew?iccid=<iccid>     (or ?esimId=)  — nothing is charged
+  -> { success: true, data: { iccid, esimId, renewable, reason|null, price, currency, days, expiresAt, pendingRenewal } }
+
+  POST https://esimfly.net/api/v1/business/esims/renew
+  Headers: + Idempotency-Key: <our renewal id, <= 100 chars>   (or body field idempotencyKey)
+  Body: { "iccid": "8944110068223459012" }     // or { "esimId": 33796 }
+
+RESPONSES
+  200 { success: true, message: "eSIM renewed", data: { status: "completed", iccid, esimId, renewalReference,
+        orderId, newExpiryDate, amount, currency, duplicate } }
+  202 same shape with status: "processing", newExpiryDate: null — PAID; eSIMfly support completes the extension
+      (or refunds the wallet). Do NOT renew again; re-read the eSIM later for the new expiry.
+  duplicate: true = same Idempotency-Key already processed; nothing charged again.
+
+ERRORS: 400 MISSING_IDENTIFIER; 400 NOT_RENEWABLE (show message; renewal allowed until 7 days after expiry);
+        400 INSUFFICIENT_BALANCE { currentBalance, requiredBalance, currency }; 403 ACCOUNT_SUSPENDED;
+        404 ESIM_NOT_FOUND (not ours / not a renewable line); 409 RENEWAL_IN_PROGRESS; 409 RENEWAL_PENDING;
+        500/502 RENEW_FAILED (nothing charged or refunded).
+
+INTEGRATION PATTERN
+1. Show "Renew" only for lines whose package has can_extend = true (from your synced packages table).
+2. On click: GET for the price, show it, then POST with an Idempotency-Key derived from your own renewal row
+   (create the row first, status pending). Persist renewalReference, amount, currency, newExpiryDate.
+3. 202 "processing": mark the renewal paid/processing and the line "renewal in progress"; refresh the eSIM
+   (GET /esims?search=<iccid>) later. Never fire a second renewal for the same line meanwhile.
+4. On timeout retry ONCE with the SAME Idempotency-Key and a new RT-RequestID.
+5. For lines that should never lapse, use POST /esims/auto-renew instead of renewing by hand.
+
+DELIVERABLE: renewQuote(iccid) + renewLine(iccid, idempotencyKey) in the shared client, the renew action
+with price confirmation, and local renewal bookkeeping.

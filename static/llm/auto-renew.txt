@@ -1,0 +1,41 @@
+# eSIMfly Business API — Auto-renew (GET/POST /esims/auto-renew) — prompt for AI coding assistants
+
+TASK: let our customers keep phone-number lines active by renewing them every month from our eSIMfly wallet,
+per line or as our account default. eSIMfly runs the renewals; we only switch it on/off and keep our wallet funded.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, message, code }. Branch on `success` and `code`.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+BEHAVIOUR
+- Off by default. Only lines with can_extend = true.
+- From 2 days before expiry the line is renewed by one period (same flow as POST /esims/renew: wallet first).
+- Wallet short: our account email gets one warning per period (from 3 days before expiry); renewal is retried
+  until expiry, then the line runs out. Auto-renew stays on.
+- Also settable at purchase: POST /esims/order { packageCode, autoRenew: true } -> response autoRenew: true|false.
+
+ENDPOINTS
+  GET  /esims/auto-renew?iccid=<iccid>  (or ?esimId=)
+  -> { success: true, data: { iccid, esimId, autoRenew, lineSetting: true|false|null, accountDefault,
+       expiresAt, nextRenewalFrom, lastResult: "renewed"|"pending"|"insufficient_balance"|"not_renewable"|"error"|null,
+       lastAttemptAt } }
+  GET  /esims/auto-renew                      -> { success: true, data: { accountDefault } }
+  POST /esims/auto-renew { "iccid": "...", "enabled": true|false|null }    // null = follow the account default
+  POST /esims/auto-renew { "accountDefault": true|false }                  // every line without its own setting
+
+ERRORS: 400 INVALID_REQUEST; 400 MISSING_IDENTIFIER; 403 ACCOUNT_SUSPENDED; 404 ESIM_NOT_FOUND (not ours / not renewable).
+
+INTEGRATION PATTERN
+1. Show an "Auto-renew monthly" switch on phone-number lines; store the line setting locally too.
+2. Keep the wallet funded: watch GET /balance in your hourly low-balance job, especially before nextRenewalFrom dates.
+3. Read lastResult when the customer opens the line; "insufficient_balance" = top up the wallet.
+4. Renewals happen on eSIMfly's side - do not also call POST /esims/renew for the same line.
+
+DELIVERABLE: getAutoRenew / setAutoRenew(iccid, enabled) / setAccountAutoRenewDefault in the shared client,
+the UI switch, and the low-balance alert tie-in.

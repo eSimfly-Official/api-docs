@@ -1,0 +1,45 @@
+# eSIMfly Business API — Replace eSIM / new number (GET/POST /esims/replace) — prompt for AI coding assistants
+
+TASK: let support swap a phone-number line for a NEW number, free, when the number the customer received is
+still registered to someone else's WhatsApp / Telegram / Apple ID. Allowed within 3 days of purchase and once
+per order. The old eSIM stops working; the customer must install the new one.
+
+COMMON RULES (apply to every eSIMfly request)
+- Base URL: https://esimfly.net/api/v1/business
+- Headers on every call: RT-AccessCode (esf_...), RT-RequestID (fresh UUID v4 per request; reuse -> 400 DUPLICATE_REQUEST),
+  RT-Timestamp (ms since epoch; >5 min old -> 401 INVALID_TIMESTAMP),
+  RT-Signature = UPPERCASE hex HMAC-SHA256(secretKey, timestamp + requestId + accessCode + rawBody).
+  rawBody = "" for GET; for POST/PUT sign the exact body string you send, with Content-Type: application/json.
+- Keep access code + secret key server-side in env vars. Never ship them to a browser or mobile app.
+- Responses: { success: true, ... } or { success: false, message, code }. Branch on `success` and `code`.
+- Full multi-endpoint prompt: https://docs.esimfly.net/llm/esimfly-api-full-prompt.txt
+
+ENDPOINTS
+  GET  https://esimfly.net/api/v1/business/esims/replace?iccid=<iccid>    (or ?esimId=)
+  -> { success: true, data: { iccid, esimId, replaceable, reason|null, availableUntil } }
+
+  POST https://esimfly.net/api/v1/business/esims/replace
+  Body: { "iccid": "8944110068223459012", "reason": "Number linked to another WhatsApp account" }   // reason optional
+
+RESPONSE 200
+  { success: true, message: "Number replaced. Install the new eSIM - the old one no longer works.",
+    data: { previous: { iccid, esimId, phoneNumber },
+            esim: { iccid, esimId, phoneNumber, activationCode, qrCodeUrl, appleInstallUrl, androidInstallUrl, expiresAt },
+            duplicate } }
+  duplicate: true = this line was already replaced (e.g. a retry after a timeout); the same new line is returned.
+
+ERRORS: 400 MISSING_IDENTIFIER; 400 NOT_REPLACEABLE (show message: >3 days, cancelled, no numbers available...);
+        403 ACCOUNT_SUSPENDED; 404 ESIM_NOT_FOUND; 409 REPLACE_LIMIT (already replaced once - contact support);
+        409 REPLACE_IN_PROGRESS; 500/502 REPLACE_FAILED (the current number still works).
+
+INTEGRATION PATTERN
+1. Offer "Replace number" only for phone-number lines (can_extend = true) during their first 3 days; GET first
+   and show availableUntil / reason.
+2. Confirm with the operator that the old eSIM stops working, then POST once.
+3. On success: mark the old esims row replaced, insert the new line (iccid, esimId, phoneNumber, activationCode)
+   linked to the same order, and send the customer the new QR code / install links right away.
+4. On timeout: POST again with the same iccid - the API returns duplicate: true with the same new line, never a
+   second one.
+
+DELIVERABLE: getReplaceEligibility(iccid) + replaceLine(iccid, reason) in the shared client, the support action,
+and the esims bookkeeping + customer notification.

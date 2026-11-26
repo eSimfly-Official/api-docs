@@ -100,6 +100,9 @@ paste all fifteen to build a full integration — use the complete prompt above 
 | Usage Report | [page](/docs/api/usage-report) · [raw](/llm/usage-report.txt) |
 | Suspend / Activate eSIM | [page](/docs/api/suspend-esim) · [raw](/llm/suspend-esim.txt) |
 | Cancel eSIM | [page](/docs/api/cancel-esim) · [raw](/llm/cancel-esim.txt) |
+| Renew eSIM | [page](/docs/api/renew-esim) · [raw](/llm/renew-esim.txt) |
+| Replace eSIM (new number) | [page](/docs/api/replace-esim) · [raw](/llm/replace-esim.txt) |
+| Auto-renew | [page](/docs/api/auto-renew) · [raw](/llm/auto-renew.txt) |
 | Send SMS | [page](/docs/api/send-sms) · [raw](/llm/send-sms.txt) |
 | Orders | [page](/docs/api/orders) · [raw](/llm/orders.txt) |
 | Webhooks | [page](/docs/api/webhooks) · [raw](/llm/webhooks.txt) |

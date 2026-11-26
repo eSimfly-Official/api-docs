@@ -27,7 +27,7 @@ ENDPOINT
 
   GET https://esimfly.net/api/v1/business/topup/order?orderReference=<orderReference>
   -> { success: true, order: { id, orderReference, packageName, packageCode, status, amount, finalPrice,
-       orderDate, paymentMethod, paymentStatus } }   (in progress: { orderReference, status, details, created_at })
+       orderDate, paymentMethod, paymentStatus } }   (in progress: { orderReference, status, details: { status, message?, esim_id?, topup_order_id? }, created_at })
   Errors: 400 MISSING_ORDER_REFERENCE, 404 ORDER_NOT_FOUND.
 
 ELIGIBILITY: eSIM status ACTIVE, IN_USE, DEPLETED, EXPIRED or USED_EXPIRED (case-insensitive); NEW is

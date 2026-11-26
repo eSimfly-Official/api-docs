@@ -201,8 +201,8 @@ These fields are included for packages that come with a phone number (UK, France
 | network_carrier | String/null | Carrier name (e.g., "O2", "Vodafone") |
 | has_5g | Boolean | 5G support |
 | has_hotspot | Boolean | Hotspot/tethering support |
-| can_extend | Boolean | Can be extended after expiry |
-| is_recurring | Boolean | Supports auto-renewal subscription |
+| can_extend | Boolean | The line can be renewed by one more period with [Renew eSIM](/docs/api/renew-esim) or [Auto-renew](/docs/api/auto-renew) |
+| is_recurring | Boolean | Legacy flag. Lines are always sold for one period; use `can_extend` to decide whether renewals are offered |
 | activation_policy | String | `"immediate"`, `"first_use"` or `"on_first_connection"` |
 | data_breakdown | Object/null | UK vs roaming data split (`uk_data_gb`, `roaming_data_gb`) |
 | roaming | Object/null | `{ data_gb, zone }`. On these lines `data_amount_gb` is the **home-country** allowance; `roaming` is the allowance usable while roaming in `zone` (e.g. `"EU"`, `"EU27 + UK"`) |

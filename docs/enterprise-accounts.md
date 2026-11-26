@@ -80,8 +80,7 @@ enterprise portal, and the API serves **those** instead of the shared catalogue.
   "validity_days": 1,
   "cost": 0,
   "currency": "EUR",
-  "is_unlimited": true,
-  "provider": "enterprise"
+  "is_unlimited": true
 }
 ```
 

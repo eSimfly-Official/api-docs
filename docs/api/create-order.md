@@ -39,7 +39,8 @@ Simply provide the package code - everything else is handled automatically.
 |-------|------|----------|-------------|
 | packageCode | String | **Yes** | Package code from the packages endpoint |
 | quantity | Integer | No | Number of eSIMs to order: a whole number from 1 to 10 (default: 1). Anything else returns `INVALID_QUANTITY` |
-| recurring | Boolean | No | For O2 and Vodafone packages that support auto-renewal. Set to `true` to enable subscription. Default: `false` (one-time). Check `is_recurring` in the packages list to see which packages support this. |
+| autoRenew | Boolean | No | Phone-number packages only (`can_extend: true`): renew the line every month from your wallet. Same as turning it on later with [Auto-renew](/docs/api/auto-renew). Default: off |
+| recurring | Boolean | No | **Ignored** (since 2026-11-26). Phone-number lines are always sold for one period (1 month). Extend them with [Renew eSIM](/docs/api/renew-esim) or [Auto-renew](/docs/api/auto-renew) |
 | idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
 The API automatically handles:
@@ -65,20 +66,22 @@ The API automatically handles:
 }
 ```
 
-**O2/Vodafone package (one-time, default):**
+**Phone-number package (one month):**
 ```json
 {
   "packageCode": "OT-50000MB-9999T-9999V"
 }
 ```
 
-**O2/Vodafone package (with auto-renewal subscription):**
+**Phone-number package, renewed every month from your wallet:**
 ```json
 {
   "packageCode": "OT-50000MB-9999T-9999V",
-  "recurring": true
+  "autoRenew": true
 }
 ```
+
+The response then also contains `"autoRenew": true` (or `false` if auto-renew could not be switched on, for example because the package cannot be renewed; turn it on later with [Auto-renew](/docs/api/auto-renew)).
 
 ## Response
 
@@ -227,7 +230,9 @@ A small number of packages are provisioned asynchronously and take a few minutes
 }
 ```
 
-When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready to deliver to your customer.
+When `isPending` changes to `false` and `iccid` is populated, the eSIM is ready to deliver to your customer. While an eSIM is still being provisioned, `iccid` is always `null` — never a placeholder value.
+
+The order lookup returns `packageCode` exactly as you ordered it (the code from the packages endpoint).
 
 ### Response Fields
 
