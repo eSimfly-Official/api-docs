@@ -25,12 +25,9 @@ ENDPOINT
   {
     "packageCode": "<package_code from OUR synced packages table>",   // required, opaque
     "quantity": 1,                        // optional, WHOLE number 1..10 (else 400 INVALID_QUANTITY)
-    "idempotency_key": "<our order id>",  // optional but ALWAYS send it (<= 200 chars, unique per purchase)
-    "autoRenew": true                     // optional, phone-number packages (can_extend = true) only:
-                                          // renew the line every month from the wallet (POST /esims/auto-renew)
+    "idempotency_key": "<our order id>"   // optional but ALWAYS send it (<= 200 chars, unique per purchase)
   }
-  `recurring` is IGNORED: phone-number lines are always sold for one period (1 month); extend them
-  with POST /esims/renew or auto-renew. With autoRenew: true the response also has autoRenew: true|false.
+  `recurring` is IGNORED: phone-number lines are always sold for one period (1 month).
   Do NOT send price/packageName/duration — the API looks them up and charges the CURRENT cost.
 
 RESPONSE 200 (completed)

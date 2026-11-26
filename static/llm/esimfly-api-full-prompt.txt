@@ -13,11 +13,9 @@ If the project is Node.js/TypeScript, do NOT hand-write HTTP calls: `npm install
 (https://github.com/eSimfly-Official/esimfly-sdk-nodejs). `new ESIMfly({ accessCode, secretKey })`
 exposes balance.get(), packages.list()/listAll()/sync(), orders.create({ packageCode, quantity,
 idempotencyKey })/get()/waitForEsim()/list(), esims.list()/find()/usage()/status()/networkEvents()/
-usageReport()/suspend()/activate()/cancel()/sendSms(), phone-number lines esims.renewQuote()/
-renew({ idempotencyKey })/replaceEligibility()/replace()/autoRenew()/setAutoRenew()/
-accountAutoRenew()/setAccountAutoRenew(), topups.packages()/create({ iccid, packageCode,
+usageReport()/suspend()/activate()/cancel()/sendSms(), topups.packages()/create({ iccid, packageCode,
 idempotencyKey })/get(), webhooks.get()/set(), plus verifyWebhookSignature()/constructWebhookEvent()
-(use 0.2.0+ for idempotent top-ups, 0.4.0+ for renew / replace / auto-renew). It already implements
+(use 0.2.0+ for idempotent top-ups). It already implements
 sections 1, 2 and 4 below (signing, fresh request ids, typed ESIMflyError with `code`, idempotent
 retries, 1 req/s catalogue paging, pending-order polling). Keep it server-side.
 For other languages, implement the HTTP contract below directly.
@@ -65,9 +63,7 @@ Error codes you must handle:
   INVALID_PACKAGE, PACKAGE_NOT_FOUND, PRICE_MISMATCH, ORDER_NOT_FOUND, MISSING_FIELDS,
   ESIM_NOT_FOUND, ESIM_ACCESS_DENIED, ESIM_NOT_TOPPABLE, INVALID_TOPUP_PACKAGE,
   TOPUP_NOT_SUPPORTED, NOT_ELIGIBLE, ALREADY_CANCELLED, UNSUPPORTED_PROVIDER,
-  NOT_SUPPORTED, SMS_NOT_SUPPORTED, FORBIDDEN, PROVIDER_ERROR,
-  NOT_RENEWABLE, RENEWAL_IN_PROGRESS, RENEWAL_PENDING, RENEW_FAILED,
-  NOT_REPLACEABLE, REPLACE_LIMIT, REPLACE_IN_PROGRESS, REPLACE_FAILED, ACCOUNT_SUSPENDED.
+  NOT_SUPPORTED, SMS_NOT_SUPPORTED, FORBIDDEN, PROVIDER_ERROR.
 
 ====================================================================
 2. REQUIRED ARCHITECTURE — keep API calls out of the customer path
@@ -161,8 +157,6 @@ F) DIAGNOSTICS — support tools only, never in crons, never on page load.
    - POST /esims/suspend { action: "suspend"|"activate" }  (eSIMfly eSIMs only)
    - POST /esims/cancel  (only before activation; refunds to balance; idempotent-safe)
    - POST /esims/send-sms { message <=500 chars }
-   - Phone-number lines: POST /esims/renew (one more month from the wallet, send Idempotency-Key),
-     POST /esims/replace (free new number within 3 days), POST /esims/auto-renew (monthly from the wallet).
 
 G) WEBHOOKS — configure once, verify always.
    - PUT /webhooks { "webhook_url": "https://…", "events": ["esim.installed", "esim.status.changed", "esim.usage.threshold"] }
@@ -221,8 +215,7 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
 
 3.3 POST /esims/order
   Body: { packageCode: string, quantity?: whole number 1..10, idempotency_key?: string,
-          autoRenew?: boolean (phone-number packages only: renew monthly from the wallet) }
-  `recurring` is ignored: phone-number lines are one period (1 month); extend with 3.17 / 3.19.
+          recurring?: boolean (ignored: phone-number lines are sold for one period, 1 month) }
   -> { success, message, orderReference, esimId, packageName, newBalance, currency,
        lpaString, qrCodeUrl (data:image/png;base64,...), directAppleInstallUrl, directAndroidInstallUrl,
        paymentMethod: "balance", status: "completed"|"pending_details", amount, profit,
@@ -333,34 +326,6 @@ orders = number of sales, top-ups = number of top-ups, usage lookups = customer 
        sim_status, esim_status, profile_status, unlimited, total_volume, total_duration, expired_time } | null }],
        summary: { total_orders, total_revenue }, pagination } }
 
-3.17 GET /esims/renew?iccid=… (or ?esimId=)   — phone-number lines (package can_extend = true): price + eligibility
-  -> { success, data: { iccid, esimId, renewable, reason|null, price, currency, days, expiresAt, pendingRenewal } }
-     POST /esims/renew   Body: { iccid|esimId }   Header: Idempotency-Key: <your id> (or body idempotencyKey)
-  Adds ONE period (usually 30 days), paid from the wallet. Allowed until 7 days after expiry.
-  -> 200 { success, message, data: { status: "completed", iccid, esimId, renewalReference, orderId,
-           newExpiryDate, amount, currency, duplicate } }
-     202 same shape with status: "processing" (paid; the extension is finished by eSIMfly support,
-         or the wallet is refunded) — re-read the eSIM later; do NOT renew again.
-  Errors: MISSING_IDENTIFIER | ESIM_NOT_FOUND | NOT_RENEWABLE | INSUFFICIENT_BALANCE { currentBalance,
-          requiredBalance, currency } | 409 RENEWAL_IN_PROGRESS | 409 RENEWAL_PENDING | RENEW_FAILED | 403 ACCOUNT_SUSPENDED.
-
-3.18 GET /esims/replace?iccid=… (or ?esimId=)  -> { success, data: { iccid, esimId, replaceable, reason|null, availableUntil } }
-     POST /esims/replace   Body: { iccid|esimId, reason? }
-  Free new number for a phone-number line whose number is still registered to someone else's WhatsApp /
-  Telegram / Apple ID. Within 3 days of purchase, once per order. The old eSIM stops working.
-  -> { success, message, data: { previous: { iccid, esimId, phoneNumber }, esim: { iccid, esimId, phoneNumber,
-       activationCode, qrCodeUrl, appleInstallUrl, androidInstallUrl, expiresAt }, duplicate } }
-  A retry after success returns the same new line with duplicate: true (no second purchase).
-  Errors: MISSING_IDENTIFIER | ESIM_NOT_FOUND | NOT_REPLACEABLE | 409 REPLACE_LIMIT | 409 REPLACE_IN_PROGRESS | REPLACE_FAILED.
-
-3.19 Auto-renew (phone-number lines, off by default)
-  GET /esims/auto-renew?iccid=… -> { success, data: { iccid, esimId, autoRenew, lineSetting (true|false|null),
-       accountDefault, expiresAt, nextRenewalFrom, lastResult, lastAttemptAt } }
-  GET /esims/auto-renew (no identifier) -> { success, data: { accountDefault } }
-  POST /esims/auto-renew { iccid|esimId, enabled: true|false|null }   (null = follow the account default)
-  POST /esims/auto-renew { accountDefault: true|false }               (every line without its own setting)
-  Renews from 2 days before expiry. Wallet short: the account is emailed (once per period, from 3 days
-  before) and renewal is retried until expiry, then the line runs out; auto-renew stays on.
 
 ====================================================================
 4. IMPLEMENTATION CHECKLIST (do all of these)

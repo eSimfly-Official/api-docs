@@ -15,9 +15,6 @@ import networkEvents from '@site/static/llm/network-events.txt';
 import usageReport from '@site/static/llm/usage-report.txt';
 import suspendEsim from '@site/static/llm/suspend-esim.txt';
 import cancelEsim from '@site/static/llm/cancel-esim.txt';
-import renewEsim from '@site/static/llm/renew-esim.txt';
-import replaceEsim from '@site/static/llm/replace-esim.txt';
-import autoRenew from '@site/static/llm/auto-renew.txt';
 import sendSms from '@site/static/llm/send-sms.txt';
 import orders from '@site/static/llm/orders.txt';
 import webhooks from '@site/static/llm/webhooks.txt';
@@ -87,21 +84,6 @@ const prompts = {
     text: cancelEsim,
     title: 'Cancel eSIM',
     pattern: 'Pre-check eligibility in your DB, warn that the whole order is cancelled, persist refund method and pending refunds',
-  },
-  'renew-esim': {
-    text: renewEsim,
-    title: 'Renew eSIM',
-    pattern: 'Phone-number lines: GET the price, POST with an Idempotency-Key, treat 202 "processing" as paid and never renew twice',
-  },
-  'replace-esim': {
-    text: replaceEsim,
-    title: 'Replace eSIM (new number)',
-    pattern: 'Support action within 3 days of purchase: swap an unusable number, store the new line and send the new QR at once',
-  },
-  'auto-renew': {
-    text: autoRenew,
-    title: 'Auto-renew',
-    pattern: 'Monthly renewals run on eSIMfly; you switch it per line or account-wide and keep the wallet funded',
   },
   'send-sms': {
     text: sendSms,

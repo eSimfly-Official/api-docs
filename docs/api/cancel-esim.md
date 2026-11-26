@@ -64,8 +64,6 @@ In all cases, an eSIM that has an activation date (QR code scanned and installed
 
 Phone-number lines (packages with `can_extend: true`) follow the network's own rule instead: they can be cancelled **within 3 days of purchase**, and only on lines whose network allows online cancellation. The full price goes back to your balance. After 3 days, or on other lines, the response is `NOT_ELIGIBLE` with a reason such as `"Phone-number lines can only be cancelled within 3 days of purchase"` or `"This line cannot be cancelled online. Contact support."`
 
-If a number is unusable (still registered to someone else's messaging account), use [Replace eSIM](/docs/api/replace-esim) instead of cancelling.
-
 ## Response
 
 ### Success Response (200 OK)

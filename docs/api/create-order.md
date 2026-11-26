@@ -39,8 +39,7 @@ Simply provide the package code - everything else is handled automatically.
 |-------|------|----------|-------------|
 | packageCode | String | **Yes** | Package code from the packages endpoint |
 | quantity | Integer | No | Number of eSIMs to order: a whole number from 1 to 10 (default: 1). Anything else returns `INVALID_QUANTITY` |
-| autoRenew | Boolean | No | Phone-number packages only (`can_extend: true`): renew the line every month from your wallet. Same as turning it on later with [Auto-renew](/docs/api/auto-renew). Default: off |
-| recurring | Boolean | No | **Ignored** (since 2026-11-26). Phone-number lines are always sold for one period (1 month). Extend them with [Renew eSIM](/docs/api/renew-esim) or [Auto-renew](/docs/api/auto-renew) |
+| recurring | Boolean | No | **Ignored** (since 2026-11-26). Phone-number lines are always sold for one period (1 month) |
 | idempotency_key | String | No (recommended) | Your own unique id for this purchase (max 200 characters). A retry with the same key returns the **original** order instead of charging again — see [Idempotency](#idempotency). |
 
 The API automatically handles:
@@ -72,16 +71,6 @@ The API automatically handles:
   "packageCode": "OT-50000MB-9999T-9999V"
 }
 ```
-
-**Phone-number package, renewed every month from your wallet:**
-```json
-{
-  "packageCode": "OT-50000MB-9999T-9999V",
-  "autoRenew": true
-}
-```
-
-The response then also contains `"autoRenew": true` (or `false` if auto-renew could not be switched on, for example because the package cannot be renewed; turn it on later with [Auto-renew](/docs/api/auto-renew)).
 
 ## Response
 

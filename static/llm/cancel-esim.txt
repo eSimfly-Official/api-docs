@@ -27,7 +27,7 @@ ELIGIBILITY: only eSIMs never downloaded / installed / used / attached to a netw
 activation date is NOT eligible. Some packages process the refund immediately, others create a refund
 request confirmed shortly after.
 Phone-number lines (can_extend = true) instead: within 3 days of purchase, on lines whose network allows
-online cancellation; full price back to the wallet. For an unusable number use POST /esims/replace instead.
+online cancellation; full price back to the wallet.
 
 RESPONSE 200
   { success: true, message: "All 1 eSIM cancelled successfully.", data: {

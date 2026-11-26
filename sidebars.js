@@ -98,21 +98,6 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'api/renew-esim',
-          label: 'Renew eSIM',
-        },
-        {
-          type: 'doc',
-          id: 'api/replace-esim',
-          label: 'Replace eSIM (new number)',
-        },
-        {
-          type: 'doc',
-          id: 'api/auto-renew',
-          label: 'Auto-renew',
-        },
-        {
-          type: 'doc',
           id: 'api/suspend-esim',
           label: 'Suspend / Activate eSIM',
         },

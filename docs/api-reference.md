@@ -398,9 +398,6 @@ Packages with `can_extend: true` are phone-number lines. They are sold for one p
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET/POST /esims/renew` | Price check, then renew by one more period from your wallet. See [Renew eSIM](/docs/api/renew-esim) |
-| `GET/POST /esims/replace` | Free new number within 3 days of purchase, once per order. See [Replace eSIM](/docs/api/replace-esim) |
-| `GET/POST /esims/auto-renew` | Renew every month from your wallet, per line or account-wide. See [Auto-renew](/docs/api/auto-renew) |
 | `POST /esims/cancel` | Within 3 days of purchase, full price back to your wallet. See [Cancel eSIM](/docs/api/cancel-esim) |
 
 
